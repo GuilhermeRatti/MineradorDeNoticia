@@ -101,7 +101,7 @@ void construtor_monta_listas(FILE *arqEntrada,
 
     // Cada linha do arqEntrada contem o caminho para um documento e a classe do documento especificado
 
-    while (fscanf(arqEntrada,"%^[\n]%*c",linha))
+    while (fscanf(arqEntrada,"%[^\n]%*c",linha))
     {
         sscanf(linha,"%s %s",caminho,classe);
         vetDoc = (p_Documentos*)realloc(vetDoc,((*qtdDoc)+1)*sizeof(p_Documentos));
