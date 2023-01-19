@@ -14,16 +14,16 @@ maker: libIndices.a ProgramaPrincipal.c
 	$(CC) -o main ProgramaPrincipal.c -I Indices -L . -lIndices $(CFLAGS)
 
 builder: libIndices.a ConstrutorIndices.c
-	$(CC) -o main ConstrutorIndices.c -I Indices -L . -lIndices $(CFLAGS)
+	$(CC) -o builder ConstrutorIndices.c -I Indices -L . -lIndices $(CFLAGS)
 
 run_main:
-	./main data
+	./main data 
 
-run_builder:
-	./builder 
+run_b:
+	./builder data/tiny/train.txt out.bin
 
 clean:
-	@rm -f main *.a spotify/*.o *.txt *.bin
+	@rm -f main builder *.a Indices/*.o *.txt *.bin
 
-val:
-	@valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes --log-file=valgrind-out.txt -s ./main data
+val_b:
+	@valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes --log-file=valgrind-out.txt -s ./builder data/tiny/train.txt out.bin

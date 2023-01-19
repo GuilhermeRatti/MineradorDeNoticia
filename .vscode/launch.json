@@ -1,0 +1,16 @@
+{
+    "configurations": [
+        {
+            "name": "debugar codigo",
+            "type": "cppdbg",
+            "request": "launch",
+            "cwd": ".",
+            "program": "${workspaceRoot}/builder",
+            "args": [
+                "data/tiny/train.txt",
+                "out.bin"
+            ],
+            "preLaunchTask": "compilacao"
+        }
+    ]
+}
