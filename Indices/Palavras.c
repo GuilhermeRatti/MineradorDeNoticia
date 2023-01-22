@@ -173,7 +173,8 @@ void palavras_preenche_tfidf(p_Palavras *vet_pal, int qtdPal, int qtdDoc)
     
 }
 
-double palavras_busca_TFIDF(p_Palavras *vet_pal, int qtdPal, int idxDocPesq, int idxPalAlvo){
+double palavras_busca_TFIDF(p_Palavras *vet_pal, int qtdPal, int idxDocPesq, int idxPalAlvo)
+{
     IndicePalavras dummie;
     dummie.IdxDocumento = idxDocPesq;
 
@@ -181,6 +182,46 @@ double palavras_busca_TFIDF(p_Palavras *vet_pal, int qtdPal, int idxDocPesq, int
 
 }
 
+/* Ordem de escritura:
+//qtd de palavras         int
+//	idx de palavra          int
+//	tam_vet                 int
+//	tam_palavra             int
+//	palavra                 char (* tam_palavra)
+	//vet[tam_vet]:     
+//		idx doc                 int
+//		freq                    int
+//		TFIDF                   double
+*/
+void palavras_escrever_arquivo_bin(FILE *arq, p_Palavras *vet_pal, int qtdPal)
+{
+    int i=0, j=0, tam_palavra=0;
+
+    fwrite(&qtdPal, 1, sizeof(int), arq);//qtd de palavras int
+    
+    for ( i = 0; i < qtdPal; i++)
+    {
+        fwrite(&(vet_pal[i]->idx), 1, sizeof(int), arq);//idx de palavra int
+
+        fwrite(&(vet_pal[i]->tam_vet), 1, sizeof(int), arq);//tam_palavra int
+
+        tam_palavra = strlen(vet_pal[i]->palavra)+1;
+        fwrite(&(tam_palavra), 1, sizeof(int), arq);//tam_palavra int
+        
+        fwrite(vet_pal[i]->palavra, tam_palavra, sizeof(char), arq);//palavra char (* tam_palavra)
+
+        for (j = 0; j < vet_pal[i]->tam_vet; j++)
+        {
+            fwrite(&(vet_pal[i]->vet->Frequencia), 1, sizeof(int), arq);//idx doc int
+
+            fwrite(&(vet_pal[i]->vet->IdxDocumento), 1, sizeof(int), arq);//freq int
+            
+            fwrite(&(vet_pal[i]->vet->TFIDF), 1, sizeof(double), arq);//TFIDF double
+        }
+    }
+    
+
+}
 
 void palavras_free(p_Palavras p)
 {

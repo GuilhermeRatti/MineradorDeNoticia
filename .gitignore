@@ -3,6 +3,9 @@
 /data
 builder
 
+# Outputs
+*.bin
+
 #csv e txt files
 *.txt
 *.csv

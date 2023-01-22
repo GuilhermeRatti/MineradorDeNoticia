@@ -22,4 +22,6 @@ void palavras_preenche_tfidf(p_Palavras *vet_pal, int qtdPal, int qtdDoc);
 
 double palavras_busca_TFIDF(p_Palavras *vet_pal, int qtdPal, int idxDocPesq, int idxPalAlvo);
 
+void palavras_escrever_arquivo_bin(FILE *arq, p_Palavras *vet_pal, int qtdPal);
+
 void palavras_free(p_Palavras);

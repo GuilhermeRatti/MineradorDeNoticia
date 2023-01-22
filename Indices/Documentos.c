@@ -128,6 +128,53 @@ void documentos_preenche_tfidf(p_Documentos *doc,p_Palavras *vet_pal,int qtdPal)
 
 }
 
+/*
+// Ordem de escritura:
+//qtd de documetos      int
+//  idx de doc              int
+//	tam_vet                 int
+//	tam_nome_doc            int
+//	nome doc                char (* tam_nome_doc)
+//  tam_nome_classe         int
+//  classe                  char (* tam_nome_classe)
+//  vet[tam_vet]:     
+//		idx pal                 int
+//		freq                    int
+//		TFIDF                   double
+*/
+void documentos_escrever_arquivo_bin(FILE *arq, p_Documentos *vet_doc, int qtdDoc)
+{
+    int i=0, j=0, tam_documento = 0, tam_nome_classe = 0;
+
+    fwrite(&qtdDoc, 1, sizeof(int), arq);//qtd de palavras int
+    
+    for ( i = 0; i < qtdDoc; i++)
+    {
+        fwrite(&(vet_doc[i]->idx), 1, sizeof(int), arq);//idx de palavra int
+
+        fwrite(&(vet_doc[i]->tam_vet), 1, sizeof(int), arq);//tam_palavra int
+
+        tam_documento = strlen(vet_doc[i]->nome_doc)+1;
+        fwrite(&(tam_documento), 1, sizeof(int), arq);//tam_palavra int
+        
+        fwrite(vet_doc[i]->nome_doc, tam_documento, sizeof(char), arq);//palavra char (* tam_palavra)
+
+        tam_nome_classe = strlen(vet_doc[i]->classe)+1;
+        fwrite(&(tam_nome_classe), 1, sizeof(int), arq);//tam_palavra int
+
+        fwrite(vet_doc[i]->classe, tam_nome_classe, sizeof(char), arq);//palavra char (* tam_palavra)
+        
+        for (j = 0; j < vet_doc[i]->tam_vet; j++)
+        {
+            fwrite(&(vet_doc[i]->vet->Frequencia), 1, sizeof(int), arq);//idx doc int
+
+            fwrite(&(vet_doc[i]->vet->IdxPalavra), 1, sizeof(int), arq);//freq int
+            
+            fwrite(&(vet_doc[i]->vet->TFIDF), 1, sizeof(double), arq);//TFIDF double
+        }
+    }
+}
+
 void documentos_free(p_Documentos doc)
 {
     free(doc->classe);

@@ -124,8 +124,17 @@ int main(int argc, char const *argv[])
 
     //**Save das listas em arquivos binarios:
 
+    FILE* bin = fopen(argv[2], "wb");
+ 
+    if (bin == NULL)
+    {
+        exit(printf("ERRO AO ESCREVER ARQUIVO BINARIO"));
+    }
+    
+    palavras_escrever_arquivo_bin(bin, ListaPalavras, qtdPal);
+    documentos_escrever_arquivo_bin(bin, ListaDocumentos, qtdDoc);
 
-
+    fclose(bin);
 
     construtor_free_all(ListaDocumentos, ListaPalavras, qtdDoc, qtdPal); 
 
