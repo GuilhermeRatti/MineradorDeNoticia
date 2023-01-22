@@ -18,4 +18,8 @@ void palavras_registra_indice(p_Palavras,int);
 
 void palavras_imprime_informacoes(p_Palavras *,int,char*);
 
+void palavras_preenche_tfidf(p_Palavras *vet_pal, int qtdPal, int qtdDoc);
+
+double palavras_busca_TFIDF(p_Palavras *vet_pal, int qtdPal, int idxDocPesq, int idxPalAlvo);
+
 void palavras_free(p_Palavras);

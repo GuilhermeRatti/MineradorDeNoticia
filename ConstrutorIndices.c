@@ -88,7 +88,6 @@ int main(int argc, char const *argv[])
     }
     caminho_relativo[i]='\0';
 
-    printf("%s",caminho_relativo);
     construtor_monta_listas(arqEntrada,caminho_relativo,&ListaDocumentos,&ListaPalavras,&qtdDoc,&qtdPal, &doc_allcd, &pal_allcd);
     /*
         FAZER FUNCOES QUE PERCORRAM OS DOCUMENTOS TXT E EXTRAIAM AS INFORMACOES DE FREQUENCIA, TFIDF ETC
@@ -107,8 +106,28 @@ int main(int argc, char const *argv[])
     printf("QTD DE DOC E PALAVRA: %d %d", qtdDoc, qtdPal);
     documentos_imprime(ListaDocumentos[0]);
     palavras_imprime_informacoes(ListaPalavras,qtdPal,"do");
-    construtor_free_all(ListaDocumentos, ListaPalavras, qtdDoc, qtdPal); 
 
+
+    //**Formacao do TF-IDF:
+
+    //Primeiro passo: Formacao do TF-IDF de cada palavra na lista de palavras
+    palavras_preenche_tfidf(ListaPalavras, qtdPal, qtdDoc);
+
+    //Segundo passo: Atribuição do TF-IDF das palavras na lista de documentos
+    i=0;
+    for ( i = 0; i < qtdDoc; i++)
+    {
+        p_Documentos docTfidf = ListaDocumentos[i];
+        documentos_preenche_tfidf(&docTfidf, ListaPalavras, qtdPal);
+    }
+    
+
+    //**Save das listas em arquivos binarios:
+
+
+
+
+    construtor_free_all(ListaDocumentos, ListaPalavras, qtdDoc, qtdPal); 
 
     return 0;
 }

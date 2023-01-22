@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <math.h>
 
 typedef struct
 {
@@ -140,6 +141,46 @@ void palavras_imprime_informacoes(p_Palavras *vet_pal, int qtd, char* palavra)
     free(p->palavra);
     free(p);
 }
+
+
+//n == total docs // df == qtd de docs em que apareceu
+double calcula_idf(int n, int df){
+    double res=0;
+    
+    res = log((1+n)/(1+df)) + 1;
+    
+    //res = (1+n)/(1+df);
+    //res = log(res);
+    //res += 1;
+
+    return res;
+}
+
+void palavras_preenche_tfidf(p_Palavras *vet_pal, int qtdPal, int qtdDoc)
+{
+    int i=0,j=0;
+    double idf=0;
+
+    for (i = 0; i < qtdPal; i++)
+    {
+        idf = calcula_idf(qtdDoc, vet_pal[i]->tam_vet);
+
+        for (j = 0; j < vet_pal[i]->tam_vet; j++)
+        {
+            vet_pal[i]->vet[j].TFIDF = (vet_pal[i]->vet[j].Frequencia * idf);
+        }
+    }
+    
+}
+
+double palavras_busca_TFIDF(p_Palavras *vet_pal, int qtdPal, int idxDocPesq, int idxPalAlvo){
+    IndicePalavras dummie;
+    dummie.IdxDocumento = idxDocPesq;
+
+    return ((IndicePalavras *)bsearch(&dummie, vet_pal[idxPalAlvo]->vet, vet_pal[idxPalAlvo]->tam_vet, sizeof(IndicePalavras), compara_indices_pal))->TFIDF;
+
+}
+
 
 void palavras_free(p_Palavras p)
 {

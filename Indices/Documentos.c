@@ -118,6 +118,16 @@ p_Documentos documentos_preenche_frequencia(p_Documentos doc, p_Palavras* vet_pa
     return doc;
 }
 
+void documentos_preenche_tfidf(p_Documentos *doc,p_Palavras *vet_pal,int qtdPal){
+    int i=0;
+
+    for (i = 0; i < (*doc)->tam_vet; i++)
+    {
+        (*doc)->vet[i].TFIDF = palavras_busca_TFIDF(vet_pal, qtdPal, (*doc)->idx, (*doc)->vet[i].IdxPalavra);
+    }
+
+}
+
 void documentos_free(p_Documentos doc)
 {
     free(doc->classe);
