@@ -82,50 +82,70 @@ void documentos_imprime(p_Documentos doc)
     }
 }
 
-p_Documentos documentos_preenche_frequencia(p_Documentos doc, p_Palavras* vet_pal, char* caminho, int qtd_pal)
+p_Documentos documentos_registra_frequencia(p_Documentos doc, int idx_pal)
 {
-    FILE *arqDoc = fopen(caminho,"r");
-
-    char palavra[50];
-    int idx, ja_registrada;
-    while (fscanf(arqDoc,"%s",palavra)!=EOF)
-    {
-        idx = palavras_get_indice(vet_pal,palavra,qtd_pal);
-        ja_registrada = documentos_verifica_registrado(idx,doc->tam_vet,doc->vet);
-
-        if(ja_registrada)
-        {
-            palavras_registra_frequencia(vet_pal,doc->idx,idx,ja_registrada);
-            continue;
-        }
-
-        if(doc->tam_vet==doc->tam_allcd)
-        {
-            doc->tam_allcd*=2;
-            doc->vet = (IndiceDocumentos*)realloc(doc->vet,doc->tam_allcd*sizeof(IndiceDocumentos));
-        }
-
-        doc->vet[doc->tam_vet].IdxPalavra = idx;
-        doc->vet[doc->tam_vet].Frequencia = 1;
-        doc->tam_vet++;
-        palavras_registra_frequencia(vet_pal,doc->idx,idx,ja_registrada);
-
-        documentos_organiza_indices(doc->tam_vet,doc->vet);
-    }
     
-    fclose(arqDoc);
+    int ja_registrada = documentos_verifica_registrado(idx_pal,doc->tam_vet,doc->vet);
+    if(ja_registrada)
+        return doc;
+
+    if(doc->tam_vet==doc->tam_allcd)
+    {
+        doc->tam_allcd*=2;
+        doc->vet = (IndiceDocumentos*)realloc(doc->vet,doc->tam_allcd*sizeof(IndiceDocumentos));
+    }
+
+    doc->vet[doc->tam_vet].IdxPalavra = idx_pal;
+    doc->vet[doc->tam_vet].Frequencia = 1;
+    doc->tam_vet++;
+    documentos_organiza_indices(doc->tam_vet,doc->vet);
 
     return doc;
+    // FILE *arqDoc = fopen(caminho,"r");
+
+    // char palavra[50];
+    // int idx, ja_registrada;
+    // while (fscanf(arqDoc,"%s",palavra)!=EOF)
+    // {
+    //     idx = palavras_get_indice(vet_pal,palavra,qtd_pal);
+    //     ja_registrada = documentos_verifica_registrado(idx,doc->tam_vet,doc->vet);
+
+    //     if(ja_registrada)
+    //     {
+    //         palavras_registra_frequencia(vet_pal,doc->idx,idx,ja_registrada);
+    //         continue;
+    //     }
+
+    //     if(doc->tam_vet==doc->tam_allcd)
+    //     {
+    //         doc->tam_allcd*=2;
+    //         doc->vet = (IndiceDocumentos*)realloc(doc->vet,doc->tam_allcd*sizeof(IndiceDocumentos));
+    //     }
+
+    //     doc->vet[doc->tam_vet].IdxPalavra = idx;
+    //     doc->vet[doc->tam_vet].Frequencia = 1;
+    //     doc->tam_vet++;
+    //     palavras_registra_frequencia(vet_pal,doc->idx,idx,ja_registrada);
+
+    //     documentos_organiza_indices(doc->tam_vet,doc->vet);
+    // }
+    
+    // fclose(arqDoc);
 }
 
-void documentos_preenche_tfidf(p_Documentos *doc,p_Palavras *vet_pal,int qtdPal){
-    int i=0;
+p_Documentos documentos_preenche_tfidf(p_Documentos doc, int hash_palavra, double tfidf){
 
-    for (i = 0; i < (*doc)->tam_vet; i++)
-    {
-        (*doc)->vet[i].TFIDF = palavras_busca_TFIDF(vet_pal, qtdPal, (*doc)->idx, (*doc)->vet[i].IdxPalavra);
-    }
+    IndiceDocumentos id_doc;
+    id_doc.IdxPalavra = hash_palavra;
 
+    IndiceDocumentos * item = (IndiceDocumentos*)bsearch(&id_doc, doc->vet,doc->tam_vet,sizeof(IndiceDocumentos),compara_indices_doc);
+
+    if(item==NULL)
+        exit(printf("DEU RUIM NA GAMBIARRA DO TFIDF N SEI PQ\n"));
+
+    (*item).TFIDF = tfidf;
+
+    return doc;
 }
 
 /*

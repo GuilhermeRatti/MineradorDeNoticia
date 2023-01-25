@@ -34,22 +34,14 @@ int compara_indices_pal(const void *a, const void *b)
     return p1.IdxDocumento - p2.IdxDocumento;
 }
 
-p_Palavras palavras_cria(p_Palavras*vet,int qtd,char* palavra)
+p_Palavras palavras_cria(char* palavra, int pos)
 {
     p_Palavras p = (p_Palavras)calloc(1,sizeof(struct Palavras));
     p->tam_allcd=1;
+    p->idx = pos;
     p->vet = (IndicePalavras*)calloc(p->tam_allcd,sizeof(IndicePalavras));
     p->palavra = (char*)calloc(strlen(palavra)+1,sizeof(char));
     strcpy(p->palavra,palavra);
-
-    int existe = palavras_verifica_existencia(vet,qtd,p);
-    if(existe)
-    {
-        free(p->palavra);
-        free(p->vet);
-        free(p);
-        return NULL;
-    }
 
     return p;
 }
@@ -85,34 +77,60 @@ int palavras_get_indice(p_Palavras* vet, char* palavra, int qtd)
     return (*item)->idx;
 }
 
-void palavras_registra_frequencia(p_Palavras *vet_Pal,int idx_doc, int idx_pal, int ja_registrado)
+p_Palavras palavras_registra_frequencia(p_Palavras p, int doc)
 {
-    if(ja_registrado)
+    IndicePalavras holder;
+    holder.IdxDocumento = doc;
+
+    IndicePalavras * item = (IndicePalavras*)bsearch(&holder,p->vet,p->tam_vet,sizeof(IndicePalavras),compara_indices_pal);
+
+    if(item!=NULL)
     {
-        IndicePalavras id_p;
-        id_p.IdxDocumento = idx_doc;
-
-        IndicePalavras * item = (IndicePalavras*)bsearch(&id_p,vet_Pal[idx_pal]->vet,vet_Pal[idx_pal]->tam_vet,sizeof(IndicePalavras),compara_indices_pal);
-
-        if(item==NULL)
-        {
-            printf("DOC: %d PALAVRA: %s\n", idx_doc, vet_Pal[idx_pal]->palavra);
-            exit(printf("ALGO DE MUITO ERRADO ACONTECEU. NAO ACHEI UM DOCUMENTO QUE JA ERA PRA ESTAR REGISTRADO NA PALAVRA ( ???? )\n"));
-        }
-
         item->Frequencia++;
-        return;
+
+        return p;
     }
 
-    if(vet_Pal[idx_pal]->tam_vet == vet_Pal[idx_pal]->tam_allcd)
+    if(p->tam_vet==p->tam_allcd)
     {
-        vet_Pal[idx_pal]->tam_allcd*=2;
-        vet_Pal[idx_pal]->vet = (IndicePalavras*)realloc(vet_Pal[idx_pal]->vet,vet_Pal[idx_pal]->tam_allcd*sizeof(IndicePalavras));
+        p->tam_allcd*=2;
+        p->vet =  (IndicePalavras*)realloc(p->vet,p->tam_allcd*sizeof(IndicePalavras));
     }
 
-    vet_Pal[idx_pal]->vet[vet_Pal[idx_pal]->tam_vet].IdxDocumento = idx_doc;
-    vet_Pal[idx_pal]->vet[vet_Pal[idx_pal]->tam_vet].Frequencia = 1;
-    vet_Pal[idx_pal]->tam_vet++;
+    p->vet[p->tam_vet].IdxDocumento = doc;
+    p->vet[p->tam_vet].Frequencia = 1;
+    p->tam_vet++;
+
+    return p;
+
+    // if(ja_registrado)
+    // {
+    //     IndicePalavras id_p;
+    //     id_p.IdxDocumento = idx_doc;
+
+    //     IndicePalavras * item = (IndicePalavras*)bsearch(&id_p,vet_Pal[idx_pal]->vet,vet_Pal[idx_pal]->tam_vet,sizeof(IndicePalavras),compara_indices_pal);
+
+    //     if(item==NULL)
+    //     {
+    //         printf("DOC: %d PALAVRA: %s\n", idx_doc, vet_Pal[idx_pal]->palavra);
+    //         exit(printf("ALGO DE MUITO ERRADO ACONTECEU. NAO ACHEI UM DOCUMENTO QUE JA ERA PRA ESTAR REGISTRADO NA PALAVRA ( ???? )\n"));
+    //     }
+
+    //     item->Frequencia++;
+    //     return;
+    // }
+
+    // if(vet_Pal[idx_pal]->tam_vet == vet_Pal[idx_pal]->tam_allcd)
+    // {
+    //     vet_Pal[idx_pal]->tam_allcd*=2;
+    //     vet_Pal[idx_pal]->vet = (IndicePalavras*)realloc(vet_Pal[idx_pal]->vet,vet_Pal[idx_pal]->tam_allcd*sizeof(IndicePalavras));
+    // }
+
+    // vet_Pal[idx_pal]->vet[vet_Pal[idx_pal]->tam_vet].IdxDocumento = idx_doc;
+    // vet_Pal[idx_pal]->vet[vet_Pal[idx_pal]->tam_vet].Frequencia = 1;
+    // vet_Pal[idx_pal]->tam_vet++;
+
+
 }
 
 void palavras_registra_indice(p_Palavras pal, int idx)
@@ -120,26 +138,17 @@ void palavras_registra_indice(p_Palavras pal, int idx)
     pal->idx = idx;
 }
 
-void palavras_imprime_informacoes(p_Palavras *vet_pal, int qtd, char* palavra)
+void palavras_imprime_informacoes(p_Palavras p)
 {
-    p_Palavras p = (p_Palavras)calloc(1,sizeof(struct Palavras));
-    p->palavra = (char*)calloc(strlen(palavra)+1,sizeof(char));
-    strcpy(p->palavra,palavra);
-
-    p_Palavras *res = (p_Palavras*)bsearch(&p,vet_pal,qtd,sizeof(p_Palavras),compara_palavras);
-
-    printf("\n\nPALAVRA: %s\n",(*res)->palavra);
-    printf("TAMANHO: %d\nINDEX: %d\n",(*res)->tam_vet,(*res)->idx);
+    printf("\n\nPALAVRA: %s\n",p->palavra);
+    printf("TAMANHO: %d\nINDEX: %d\n",p->tam_vet,p->idx);
     printf("\nIndices:\n");
     
     int i;
-    for(i=0;i<(*res)->tam_vet;i++)
+    for(i=0;i<p->tam_vet;i++)
     {
-        printf("DOC: %d FREQ: %d\n",(*res)->vet[i].IdxDocumento,(*res)->vet[i].Frequencia);
+        printf("DOC: %d FREQ: %d TFIDF: %.2f\n",p->vet[i].IdxDocumento,p->vet[i].Frequencia,p->vet[i].TFIDF);
     }
-
-    free(p->palavra);
-    free(p);
 }
 
 
@@ -156,21 +165,26 @@ double calcula_idf(int n, int df){
     return res;
 }
 
-void palavras_preenche_tfidf(p_Palavras *vet_pal, int qtdPal, int qtdDoc)
+p_Palavras palavras_preenche_tfidf(p_Palavras p, int qtdDoc, double **vet_tfidf, int **vet_docs, int *qtd_tfidf)
 {
-    int i=0,j=0;
+    int i=0;
     double idf=0;
 
-    for (i = 0; i < qtdPal; i++)
-    {
-        idf = calcula_idf(qtdDoc, vet_pal[i]->tam_vet);
+    (*vet_tfidf) = (double*)realloc((*vet_tfidf),p->tam_vet*sizeof(double));
+    (*vet_docs) = (int*)realloc((*vet_docs),p->tam_vet*sizeof(int)); 
 
-        for (j = 0; j < vet_pal[i]->tam_vet; j++)
-        {
-            vet_pal[i]->vet[j].TFIDF = (vet_pal[i]->vet[j].Frequencia * idf);
-        }
+    idf = calcula_idf(qtdDoc, p->tam_vet);
+
+    for (i = 0; i < p->tam_vet; i++)
+    {
+        p->vet[i].TFIDF = (p->vet[i].Frequencia * idf);
+        (*vet_tfidf)[i] = p->vet[i].TFIDF;
+        (*vet_docs)[i] = p->vet[i].IdxDocumento;
     }
-    
+
+    (*qtd_tfidf) = i;
+
+    return p;
 }
 
 double palavras_busca_TFIDF(p_Palavras *vet_pal, int qtdPal, int idxDocPesq, int idxPalAlvo)

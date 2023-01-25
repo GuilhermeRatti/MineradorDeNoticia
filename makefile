@@ -1,14 +1,16 @@
 all: maker
 
 CC = gcc
-CODIGOS = Indices/Documentos.c Indices/Palavras.c
-HEADERS = Indices/Documentos.h Indices/Palavras.h
+CODIGOS = Indices/Documentos.c Indices/Palavras.c Indices/FileManager.c Indices/HashTable.c
+HEADERS = Indices/Documentos.h Indices/Palavras.h Indices/FileManager.h Indices/HashTable.h
 override CFLAGS += -ggdb3 -lm -Wall
 
 libIndices.a: $(CODIGOS) $(HEADERS)
 	gcc -c Indices/Documentos.c -o Indices/Documentos.o $(CFLAGS)
 	gcc -c Indices/Palavras.c -o Indices/Palavras.o $(CFLAGS)
-	ar -crs libIndices.a Indices/Documentos.o Indices/Palavras.o
+	gcc -c Indices/HashTable.c -o Indices/HashTable.o $(CFLAGS)
+	gcc -c Indices/FileManager.c -o Indices/FileManager.o $(CFLAGS)
+	ar -crs libIndices.a Indices/Documentos.o Indices/Palavras.o Indices/FileManager.o Indices/HashTable.o
 
 maker: libIndices.a ProgramaPrincipal.c
 	$(CC) -o main ProgramaPrincipal.c -I Indices -L . -lIndices $(CFLAGS)
