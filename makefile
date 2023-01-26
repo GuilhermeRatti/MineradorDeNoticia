@@ -28,4 +28,4 @@ clean:
 	@rm -f main builder *.a Indices/*.o *.txt *.bin
 
 val_b:
-	@valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes --log-file=valgrind-out.txt -s ./builder data/tiny/train.txt out.bin
+	@valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes --log-file=valgrind-out.txt -s ./builder data/small/train.txt out.bin

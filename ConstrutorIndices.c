@@ -59,7 +59,7 @@ int main(int argc, char const *argv[])
             break;
         i++;
     }
-    caminho_relativo[i]='\0';
+    caminho_relativo[strlen(caminho_relativo) - i + 1]='\0';
 
     p_HashTable table = hash_initialize_table();
     table = manager_read_txt(arqEntrada, caminho_relativo, table);
@@ -67,11 +67,11 @@ int main(int argc, char const *argv[])
 
     free(caminho_relativo);
     fclose(arqEntrada);
-
-    hash_print_amount_of_items(table);
     
     hash_imprime_palavra(table,"judiciario");
     hash_imprime_documento(table,1);
+
+    hash_print_amount_of_items(table);
     
     //**Formacao do TF-IDF:
 
