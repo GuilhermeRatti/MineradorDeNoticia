@@ -73,7 +73,7 @@ p_HashTable hash_register_new_item(p_HashTable table, char* palavra, int p_index
 
     int doc = table->qtd_doc-1;
     int i,pos_no_indice = table->pal_table[p_index].qtd_palavras_no_indice;
-    table->doc_table[doc] = documentos_registra_frequencia(table->doc_table[doc],p_index);
+    table->doc_table[doc] = documentos_registra_frequencia(table->doc_table[doc],palavra);
     
     for(i=0;i<pos_no_indice;i++)
     {
@@ -129,9 +129,14 @@ void hash_imprime_palavra(p_HashTable table,char* palavra)
     }
 }
 
+void hash_imprime_documento(p_HashTable table,int posicao)
+{
+    documentos_imprime(table->doc_table[posicao]);
+}
+
 p_HashTable hash_calcula_tfidf(p_HashTable table)
 {
-    int i,j,k,qtd_tfidf,qtd;
+    int i,j,qtd_tfidf,qtd;
 
     for(i=0;i<table->pal_allcd;i++)
     {
@@ -143,18 +148,44 @@ p_HashTable hash_calcula_tfidf(p_HashTable table)
             int *vet_docs = (int*)malloc(sizeof(int));
 
             id_desejado.vet_indice[j] = palavras_preenche_tfidf(id_desejado.vet_indice[j],table->qtd_doc, &vet_tfidf, &vet_docs,&qtd_tfidf);
-            for(k=0;k<qtd_tfidf;k++)
-            {
-                table->doc_table[vet_docs[k]] = documentos_preenche_tfidf(table->doc_table[vet_docs[k]],
-                                                                          i,
-                                                                          vet_tfidf[k]);
-            }
             free(vet_docs);
             free(vet_tfidf);
         }
     }
+    
+    table = hash_preenche_tfidf_docs(table);
 
     return table;
+}
+
+p_HashTable hash_preenche_tfidf_docs(p_HashTable table)
+{
+    int i;
+
+    for(i=0;i<table->qtd_doc;i++)
+    {
+        table->doc_table[i] = documentos_preenche_tfidf(table,table->doc_table[i]);
+    }
+
+    return table;
+}
+
+double hash_return_tfidf(p_HashTable table, int doc, char*palavra)
+{
+    int i,match,hash = hash_get_index(palavra);
+    p_Palavras p = palavras_cria(palavra,0); // Encapsulando a palavra pra fazer comparacao
+
+    for(i=0;i<table->pal_table[hash].qtd_palavras_no_indice;i++)
+    {
+        match = compara_palavras(&p,&(table->pal_table[hash].vet_indice[i]));
+        if(!match)
+        {
+            palavras_free(p);
+            break;
+        }
+    }
+
+    return palavras_busca_TFIDF(table->pal_table[hash].vet_indice[i],doc);
 }
 
 void hash_free(p_HashTable table)
