@@ -71,6 +71,7 @@ int main(int argc, char const *argv[])
     hash_print_amount_of_items(table);
     
     hash_imprime_palavra(table,"judiciario");
+    hash_imprime_documento(table,1);
     
     //**Formacao do TF-IDF:
 

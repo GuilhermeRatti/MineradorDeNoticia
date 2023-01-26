@@ -1,11 +1,12 @@
 #include "Documentos.h"
+#include "HashTable.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
 typedef struct
 {
-    int IdxPalavra;
+    char *palavra;
     int Frequencia;
     double TFIDF;
 } IndiceDocumentos;
@@ -23,16 +24,18 @@ struct Documentos
 int compara_indices_doc(const void *a, const void *b)
 {
     IndiceDocumentos idx1 = *((IndiceDocumentos*)a), idx2 = *((IndiceDocumentos*)b);
-    return idx1.IdxPalavra - idx2.IdxPalavra;
+    return strcmp(idx1.palavra,idx2.palavra);
 }
 
-int documentos_verifica_registrado(int idx, int qtd, IndiceDocumentos* vet)
+int documentos_verifica_registrado(char* palavra, int qtd, IndiceDocumentos* vet)
 {
     IndiceDocumentos i_doc;
-    i_doc.IdxPalavra=idx;
+    i_doc.palavra = (char*)calloc(strlen(palavra)+1,sizeof(char));
+    strcpy(i_doc.palavra,palavra);
 
     IndiceDocumentos* item = (IndiceDocumentos*)bsearch(&i_doc,vet,qtd,sizeof(IndiceDocumentos),compara_indices_doc);
 
+    free(i_doc.palavra);
     if(item==NULL)
         return 0;
     
@@ -78,14 +81,14 @@ void documentos_imprime(p_Documentos doc)
 
     for(i=0;i<doc->tam_vet;i++)
     {
-        printf("ID: %d, Freq: %d\n",doc->vet[i].IdxPalavra,doc->vet[i].Frequencia);
+        printf("ID: %d, Freq: %d, TFIDF: %.2f\n",hash_get_index(doc->vet[i].palavra),doc->vet[i].Frequencia,doc->vet[i].TFIDF);
     }
 }
 
-p_Documentos documentos_registra_frequencia(p_Documentos doc, int idx_pal)
+p_Documentos documentos_registra_frequencia(p_Documentos doc, char *palavra)
 {
     
-    int ja_registrada = documentos_verifica_registrado(idx_pal,doc->tam_vet,doc->vet);
+    int ja_registrada = documentos_verifica_registrado(palavra,doc->tam_vet,doc->vet);
     if(ja_registrada)
         return doc;
 
@@ -95,55 +98,24 @@ p_Documentos documentos_registra_frequencia(p_Documentos doc, int idx_pal)
         doc->vet = (IndiceDocumentos*)realloc(doc->vet,doc->tam_allcd*sizeof(IndiceDocumentos));
     }
 
-    doc->vet[doc->tam_vet].IdxPalavra = idx_pal;
+    
+    doc->vet[doc->tam_vet].palavra = (char*)calloc(strlen(palavra)+1,sizeof(char));
+    strcpy(doc->vet[doc->tam_vet].palavra,palavra);
     doc->vet[doc->tam_vet].Frequencia = 1;
     doc->tam_vet++;
     documentos_organiza_indices(doc->tam_vet,doc->vet);
 
     return doc;
-    // FILE *arqDoc = fopen(caminho,"r");
-
-    // char palavra[50];
-    // int idx, ja_registrada;
-    // while (fscanf(arqDoc,"%s",palavra)!=EOF)
-    // {
-    //     idx = palavras_get_indice(vet_pal,palavra,qtd_pal);
-    //     ja_registrada = documentos_verifica_registrado(idx,doc->tam_vet,doc->vet);
-
-    //     if(ja_registrada)
-    //     {
-    //         palavras_registra_frequencia(vet_pal,doc->idx,idx,ja_registrada);
-    //         continue;
-    //     }
-
-    //     if(doc->tam_vet==doc->tam_allcd)
-    //     {
-    //         doc->tam_allcd*=2;
-    //         doc->vet = (IndiceDocumentos*)realloc(doc->vet,doc->tam_allcd*sizeof(IndiceDocumentos));
-    //     }
-
-    //     doc->vet[doc->tam_vet].IdxPalavra = idx;
-    //     doc->vet[doc->tam_vet].Frequencia = 1;
-    //     doc->tam_vet++;
-    //     palavras_registra_frequencia(vet_pal,doc->idx,idx,ja_registrada);
-
-    //     documentos_organiza_indices(doc->tam_vet,doc->vet);
-    // }
-    
-    // fclose(arqDoc);
 }
 
-p_Documentos documentos_preenche_tfidf(p_Documentos doc, int hash_palavra, double tfidf){
+p_Documentos documentos_preenche_tfidf(p_HashTable table, p_Documentos doc){
 
-    IndiceDocumentos id_doc;
-    id_doc.IdxPalavra = hash_palavra;
+    int i;
 
-    IndiceDocumentos * item = (IndiceDocumentos*)bsearch(&id_doc, doc->vet,doc->tam_vet,sizeof(IndiceDocumentos),compara_indices_doc);
-
-    if(item==NULL)
-        exit(printf("DEU RUIM NA GAMBIARRA DO TFIDF N SEI PQ\n"));
-
-    (*item).TFIDF = tfidf;
+    for(i=0;i<doc->tam_vet;i++)
+    {
+        doc->vet[i].TFIDF = hash_return_tfidf(table,doc->idx,doc->vet[i].palavra);
+    }
 
     return doc;
 }
@@ -157,8 +129,9 @@ p_Documentos documentos_preenche_tfidf(p_Documentos doc, int hash_palavra, doubl
 //	nome doc                char (* tam_nome_doc)
 //  tam_nome_classe         int
 //  classe                  char (* tam_nome_classe)
-//  vet[tam_vet]:     
-//		idx pal                 int
+//  vet[tam_vet]:
+//      tam_palavra             int     
+//		palavra                 char*
 //		freq                    int
 //		TFIDF                   double
 */
@@ -188,7 +161,7 @@ void documentos_escrever_arquivo_bin(FILE *arq, p_Documentos *vet_doc, int qtdDo
         {
             fwrite(&(vet_doc[i]->vet->Frequencia), 1, sizeof(int), arq);//idx doc int
 
-            fwrite(&(vet_doc[i]->vet->IdxPalavra), 1, sizeof(int), arq);//freq int
+            //fwrite(&(vet_doc[i]->vet->IdxPalavra), 1, sizeof(int), arq);//freq int
             
             fwrite(&(vet_doc[i]->vet->TFIDF), 1, sizeof(double), arq);//TFIDF double
         }
@@ -197,8 +170,16 @@ void documentos_escrever_arquivo_bin(FILE *arq, p_Documentos *vet_doc, int qtdDo
 
 void documentos_free(p_Documentos doc)
 {
+    int i;
+
     free(doc->classe);
     free(doc->nome_doc);
+    
+    for(i=0;i<doc->tam_vet;i++)
+    {
+        free(doc->vet[i].palavra);
+    }
+    
     free(doc->vet);
     free(doc);
 }

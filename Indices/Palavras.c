@@ -102,35 +102,6 @@ p_Palavras palavras_registra_frequencia(p_Palavras p, int doc)
     p->tam_vet++;
 
     return p;
-
-    // if(ja_registrado)
-    // {
-    //     IndicePalavras id_p;
-    //     id_p.IdxDocumento = idx_doc;
-
-    //     IndicePalavras * item = (IndicePalavras*)bsearch(&id_p,vet_Pal[idx_pal]->vet,vet_Pal[idx_pal]->tam_vet,sizeof(IndicePalavras),compara_indices_pal);
-
-    //     if(item==NULL)
-    //     {
-    //         printf("DOC: %d PALAVRA: %s\n", idx_doc, vet_Pal[idx_pal]->palavra);
-    //         exit(printf("ALGO DE MUITO ERRADO ACONTECEU. NAO ACHEI UM DOCUMENTO QUE JA ERA PRA ESTAR REGISTRADO NA PALAVRA ( ???? )\n"));
-    //     }
-
-    //     item->Frequencia++;
-    //     return;
-    // }
-
-    // if(vet_Pal[idx_pal]->tam_vet == vet_Pal[idx_pal]->tam_allcd)
-    // {
-    //     vet_Pal[idx_pal]->tam_allcd*=2;
-    //     vet_Pal[idx_pal]->vet = (IndicePalavras*)realloc(vet_Pal[idx_pal]->vet,vet_Pal[idx_pal]->tam_allcd*sizeof(IndicePalavras));
-    // }
-
-    // vet_Pal[idx_pal]->vet[vet_Pal[idx_pal]->tam_vet].IdxDocumento = idx_doc;
-    // vet_Pal[idx_pal]->vet[vet_Pal[idx_pal]->tam_vet].Frequencia = 1;
-    // vet_Pal[idx_pal]->tam_vet++;
-
-
 }
 
 void palavras_registra_indice(p_Palavras pal, int idx)
@@ -187,22 +158,27 @@ p_Palavras palavras_preenche_tfidf(p_Palavras p, int qtdDoc, double **vet_tfidf,
     return p;
 }
 
-double palavras_busca_TFIDF(p_Palavras *vet_pal, int qtdPal, int idxDocPesq, int idxPalAlvo)
+double palavras_busca_TFIDF(p_Palavras p, int doc)
 {
-    IndicePalavras dummie;
-    dummie.IdxDocumento = idxDocPesq;
+    IndicePalavras holder;
+    holder.IdxDocumento = doc; 
+    IndicePalavras *item = (IndicePalavras*)bsearch(&holder,p->vet,p->tam_vet,sizeof(IndicePalavras),compara_indices_pal);
+    if(item==NULL)
+    {
+        exit(printf("ERRO!! NAO ACHEI DOCUMENTO %d QUE ERA PRA ESTAR REGISTRADO NA PALAVRA %s\n",doc,p->palavra));
+    }
 
-    return ((IndicePalavras *)bsearch(&dummie, vet_pal[idxPalAlvo]->vet, vet_pal[idxPalAlvo]->tam_vet, sizeof(IndicePalavras), compara_indices_pal))->TFIDF;
-
+    return item->TFIDF;
 }
 
 /* Ordem de escritura:
-//qtd de palavras         int
+//tamanho_da_hash         int
+//  qtd_palavras_indice     int
 //	idx de palavra          int
 //	tam_vet                 int
 //	tam_palavra             int
 //	palavra                 char (* tam_palavra)
-	//vet[tam_vet]:     
+//      vet[tam_vet]:     
 //		idx doc                 int
 //		freq                    int
 //		TFIDF                   double
