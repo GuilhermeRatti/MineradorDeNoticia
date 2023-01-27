@@ -105,7 +105,7 @@ void hash_print_amount_of_items(p_HashTable table)
 
 void hash_imprime_palavra(p_HashTable table,char* palavra)
 {
-    int hash = hash_get_index(palavra),i,match;
+    int hash = hash_get_index(palavra),i,match=0;
     HashIndex desired_index = table->pal_table[hash];
 
     p_Palavras p = palavras_cria(palavra,0); // Encapsulando a palavra pra fazer comparacao
@@ -187,6 +187,125 @@ double hash_return_tfidf(p_HashTable table, int doc, char*palavra)
 
     return palavras_busca_TFIDF(table->pal_table[hash].vet_indice[i],doc);
 }
+/*Ordem de escrita: 
+    qtd_pal                                 - int
+    HashIndex{                              - HashIndex
+        OBS: escreve todos os indices da tabela hash, inclusive vazios
+        OBS: chama a funcao 'palavras_escrever_arquivo_bin'       
+        Ordem de escritura:
+        qtd_palavras_indice                 - int
+        p_Palavras{                         - p_Palavras
+            idx de palavra                  - int
+            tam_vet                         - int
+            tam_palavra                     - int
+            palavra                         - char (* tam_palavra)
+            vet[tam_vet]:                   - IndicePalavras
+                idx doc                     - int
+                freq                        - int
+                TFIDF                       - double
+        }
+    }
+    qtd_doc                                 - int
+    p_Documentos{                           - p_Documentos
+        OBS: chama a funcao 'documentos_escrever_arquivo_bin'
+        Ordem de escritura:
+        idx de doc                          - int
+        tam_vet                             - int
+        tam_nome_doc                        - int
+        nome doc                            - char (* tam_nome_doc)
+        tam_nome_classe                     - int
+        classe                              - char (* tam_nome_classe)
+        vet[tam_vet]:                       - IndiceDocumentos
+            tam_palavra                     - int     
+            palavra                         - char *
+            freq                            - int
+            TFIDF                           - double
+    }
+*/
+void hash_escrever_arquivo_bin(p_HashTable table, FILE *arq)
+{
+    int i=0, qtd_pal_local = 0;
+
+    fwrite(&(table->qtd_pal), 1, sizeof(int), arq);//qtd de palavras -int
+
+    for ( i = 0; i < SIZE_OF_TABLE; i++)
+    {
+        qtd_pal_local = table->pal_table[i].qtd_palavras_no_indice;
+
+        fwrite(&(qtd_pal_local), 1, sizeof(int), arq);//qtd de palavras - int (para montar a HashIndex)
+    
+        palavras_escrever_arquivo_bin(arq, table->pal_table[i].vet_indice, qtd_pal_local);
+    }
+
+    fwrite(&(table->qtd_doc), 1, sizeof(int), arq);//qtd de documentos -int
+
+    documentos_escrever_arquivo_bin(arq, table->doc_table, table->qtd_doc);
+    
+}
+
+/*Ordem de escrita: 
+        qtd_pal                                 - int 
+        HashIndex{                              - HashIndex
+            OBS: escreve todos os indices da tabela hash, inclusive vazios
+            OBS: chama a funcao 'palavras_escrever_arquivo_bin'       
+            Ordem de escritura:
+            qtd_palavras_indice                 - ints
+            p_Palavras{                         - p_Palavras
+        	    idx de palavra                  - int
+        	    tam_vet                         - int
+        	    tam_palavra                     - int
+        	    palavra                         - char (* tam_palavra)
+                vet[tam_vet]:                   - IndicePalavras
+        		    idx doc                     - int
+        		    freq                        - int
+        		    TFIDF                       - double
+            }
+        }
+        qtd_doc                                 - int
+        p_Documentos{                           - p_Documentos
+            OBS: chama a funcao 'documentos_escrever_arquivo_bin'
+            Ordem de escritura:
+            qtd de documetos                    - int
+                idx de doc                      - int
+            	tam_vet                         - int
+            	tam_nome_doc                    - int
+            	nome doc                        - char (* tam_nome_doc)
+                tam_nome_classe                 - int
+                classe                          - char (* tam_nome_classe)
+                vet[tam_vet]:                   - IndiceDocumentos
+                    tam_palavra                 - int     
+                	palavra                     - char *
+                	freq                        - int
+                	TFIDF                       - double
+        }
+*/
+void hash_le_arquivo_bin(p_HashTable table, FILE *arq)
+{
+    int i=0, qtd_pal_local = 0;
+
+    fread(&(table->qtd_pal), 1, sizeof(int), arq); //qtd_pal - int
+    
+    for ( i = 0; i < SIZE_OF_TABLE; i++)
+    {
+        fread(&(qtd_pal_local), 1, sizeof(int), arq); // qtd_palavras_indice - int
+        
+        table->pal_table[i].qtd_palavras_no_indice = qtd_pal_local;
+        
+        if (qtd_pal_local != 0)//pula o hash atual caso nao haja palavras nele
+        {
+            table->pal_table[i].vet_indice = (p_Palavras *)calloc(qtd_pal_local, sizeof(p_Palavras));
+
+            palavras_le_arquivo_bin(arq, table->pal_table[i].vet_indice, qtd_pal_local);
+        }
+    }
+        
+    fread(&(table->qtd_doc), 1, sizeof(int), arq); //qtd_doc - int
+    
+    table->doc_table = (p_Documentos*)realloc(table->doc_table, table->qtd_doc*sizeof(p_Documentos));
+
+    documentos_le_arquivo_bin(arq, table->doc_table, table->qtd_doc);
+}
+
 
 void hash_free(p_HashTable table)
 {

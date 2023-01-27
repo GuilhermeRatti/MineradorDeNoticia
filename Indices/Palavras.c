@@ -172,23 +172,21 @@ double palavras_busca_TFIDF(p_Palavras p, int doc)
 }
 
 /* Ordem de escritura:
-//tamanho_da_hash         int
-//  qtd_palavras_indice     int
-//	idx de palavra          int
-//	tam_vet                 int
-//	tam_palavra             int
-//	palavra                 char (* tam_palavra)
-//      vet[tam_vet]:     
-//		idx doc                 int
-//		freq                    int
-//		TFIDF                   double
+    p_Palavras{                         - p_Palavras
+        idx de palavra                  - int
+        tam_vet                         - int
+        tam_palavra                     - int
+        palavra                         - char (* tam_palavra)
+        vet[tam_vet]:                   - IndicePalavras
+            idx doc                     - int
+            freq                        - int
+            TFIDF                       - double
+    }
 */
 void palavras_escrever_arquivo_bin(FILE *arq, p_Palavras *vet_pal, int qtdPal)
 {
     int i=0, j=0, tam_palavra=0;
 
-    fwrite(&qtdPal, 1, sizeof(int), arq);//qtd de palavras int
-    
     for ( i = 0; i < qtdPal; i++)
     {
         fwrite(&(vet_pal[i]->idx), 1, sizeof(int), arq);//idx de palavra int
@@ -202,15 +200,57 @@ void palavras_escrever_arquivo_bin(FILE *arq, p_Palavras *vet_pal, int qtdPal)
 
         for (j = 0; j < vet_pal[i]->tam_vet; j++)
         {
-            fwrite(&(vet_pal[i]->vet->Frequencia), 1, sizeof(int), arq);//idx doc int
+            fwrite(&(vet_pal[i]->vet[j].IdxDocumento), 1, sizeof(int), arq);//idx doc int
 
-            fwrite(&(vet_pal[i]->vet->IdxDocumento), 1, sizeof(int), arq);//freq int
+            fwrite(&(vet_pal[i]->vet[j].Frequencia), 1, sizeof(int), arq);//freq int
             
-            fwrite(&(vet_pal[i]->vet->TFIDF), 1, sizeof(double), arq);//TFIDF double
+            fwrite(&(vet_pal[i]->vet[j].TFIDF), 1, sizeof(double), arq);//TFIDF double
         }
     }
     
 
+}
+
+/* Ordem de leitura:
+    p_Palavras{                         - p_Palavras
+        idx de palavra                  - int
+        tam_vet                         - int
+        tam_palavra                     - int
+        palavra                         - char (* tam_palavra)
+        vet[tam_vet]:                   - IndicePalavras
+            idx doc                     - int
+            freq                        - int
+            TFIDF                       - double
+    }
+*/
+void palavras_le_arquivo_bin(FILE *arq, p_Palavras *vet_pal, int qtdPal)
+{
+    int i=0, j=0, tam_palavra=0;
+
+    for ( i = 0; i < qtdPal; i++)
+    {
+        vet_pal[i] = (p_Palavras)calloc(1,sizeof(struct Palavras));//alocacao
+
+        fread(&(vet_pal[i]->idx), 1, sizeof(int), arq);//idx de palavra int
+
+        fread(&(vet_pal[i]->tam_vet), 1, sizeof(int), arq);//tam_palavra int
+
+        fread(&(tam_palavra), 1, sizeof(int), arq);//tam_palavra int
+        
+        vet_pal[i]->palavra = (char *)calloc(tam_palavra, sizeof(char));//alocacao
+        fread(vet_pal[i]->palavra, tam_palavra, sizeof(char), arq);//palavra char (* tam_palavra)
+
+        vet_pal[i]->vet = (IndicePalavras *)calloc(vet_pal[i]->tam_vet, sizeof(IndicePalavras));//alocacao
+
+        for (j = 0; j < vet_pal[i]->tam_vet; j++)
+        {
+            fread(&(vet_pal[i]->vet[j].IdxDocumento), 1, sizeof(int), arq);//idx doc int
+
+            fread(&(vet_pal[i]->vet[j].Frequencia), 1, sizeof(int), arq);//freq int
+            
+            fread(&(vet_pal[i]->vet[j].TFIDF), 1, sizeof(double), arq);//TFIDF double
+        }
+    }
 }
 
 void palavras_free(p_Palavras p)

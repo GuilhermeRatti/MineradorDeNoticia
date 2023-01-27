@@ -25,6 +25,15 @@ p_HashTable manager_read_txt(FILE* arqEntrada, char* caminho_relativo, p_HashTab
 
         FILE *documento;
         documento = fopen(diretorio_doc,"r");
+        
+        if (documento == NULL)
+        {
+            fclose(arqEntrada);
+            free(caminho_relativo);
+            hash_free(table);
+            exit(printf("ERRO: DOCUMENTO OU CAMINHO NAO ENCONTRADO!"));
+        }
+        
 
         while (fscanf(documento,"%s",palavra)!=EOF)
         {

@@ -73,35 +73,20 @@ int main(int argc, char const *argv[])
 
     hash_print_amount_of_items(table);
     
-    //**Formacao do TF-IDF:
-
-    //Primeiro passo: Formacao do TF-IDF de cada palavra na lista de palavras
-    // palavras_preenche_tfidf(ListaPalavras, qtdPal, qtdDoc);
-
-    // //Segundo passo: Atribuição do TF-IDF das palavras na lista de documentos
-    // i=0;
-    // for ( i = 0; i < qtdDoc; i++)
-    // {
-    //     p_Documentos docTfidf = ListaDocumentos[i];
-    //     documentos_preenche_tfidf(&docTfidf, ListaPalavras, qtdPal);
-    // }
     
 
-    // //**Save das listas em arquivos binarios:
+    //**Save das listas em arquivos binarios:
 
-    // FILE* bin = fopen(argv[2], "wb");
+    FILE *bin = fopen(argv[2], "wb");
  
-    // if (bin == NULL)
-    // {
-    //     exit(printf("ERRO AO ESCREVER ARQUIVO BINARIO"));
-    // }
+    if (bin == NULL)
+    {
+         exit(printf("ERRO AO ESCREVER ARQUIVO BINARIO"));
+    }
     
-    // palavras_escrever_arquivo_bin(bin, ListaPalavras, qtdPal);
-    // documentos_escrever_arquivo_bin(bin, ListaDocumentos, qtdDoc);
-
-    // fclose(bin);
-
-    // construtor_free_all(ListaDocumentos, ListaPalavras, qtdDoc, qtdPal); 
+    hash_escrever_arquivo_bin(table, bin);
+    
+    fclose(bin);
 
     hash_free(table);
 

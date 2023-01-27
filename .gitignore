@@ -2,6 +2,7 @@
 *.d
 /data
 builder
+principal
 
 # Outputs
 *.bin
@@ -9,6 +10,7 @@ builder
 #csv e txt files
 *.txt
 *.csv
+*.pdf
 
 # Object files
 *.o

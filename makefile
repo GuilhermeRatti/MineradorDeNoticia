@@ -12,20 +12,23 @@ libIndices.a: $(CODIGOS) $(HEADERS)
 	gcc -c Indices/FileManager.c -o Indices/FileManager.o $(CFLAGS)
 	ar -crs libIndices.a Indices/Documentos.o Indices/Palavras.o Indices/FileManager.o Indices/HashTable.o
 
-maker: libIndices.a ProgramaPrincipal.c
-	$(CC) -o main ProgramaPrincipal.c -I Indices -L . -lIndices $(CFLAGS)
-
 builder: libIndices.a ConstrutorIndices.c
 	$(CC) -o builder ConstrutorIndices.c -I Indices -L . -lIndices $(CFLAGS)
 
-run_main:
-	./main data 
+principal: libIndices.a ProgramaPrincipal.c
+	$(CC) -o principal ProgramaPrincipal.c -I Indices -L . -lIndices $(CFLAGS)
 
 run_b:
 	./builder data/tiny/train.txt out.bin
 
-clean:
-	@rm -f main builder *.a Indices/*.o *.txt *.bin
+run_p:
+	./principal out.bin 10
 
 val_b:
-	@valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes --log-file=valgrind-out.txt -s ./builder data/small/train.txt out.bin
+	@valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes --log-file=valgrind-out.txt -s ./builder data/tiny/train.txt out.bin
+
+val_p:
+	@valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes --log-file=valgrind-out.txt -s ./principal out.bin 10
+	
+clean:
+	@rm -f main builder *.a Indices/*.o *.txt *.bin

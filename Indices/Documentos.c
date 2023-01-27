@@ -120,50 +120,102 @@ p_Documentos documentos_preenche_tfidf(p_HashTable table, p_Documentos doc){
     return doc;
 }
 
-/*
-// Ordem de escritura:
-//qtd de documetos      int
-//  idx de doc              int
-//	tam_vet                 int
-//	tam_nome_doc            int
-//	nome doc                char (* tam_nome_doc)
-//  tam_nome_classe         int
-//  classe                  char (* tam_nome_classe)
-//  vet[tam_vet]:
-//      tam_palavra             int     
-//		palavra                 char*
-//		freq                    int
-//		TFIDF                   double
+/*Ordem de escritura:
+    idx de doc                      - int
+    tam_vet                         - int
+    tam_nome_doc                    - int
+    nome doc                        - char (* tam_nome_doc)
+    tam_nome_classe                 - int
+    classe                          - char (* tam_nome_classe)
+    vet[tam_vet]:                   - IndiceDocumentos
+        tam_palavra                 - int     
+        palavra                     - char *
+        freq                        - int
+        TFIDF                       - double
 */
 void documentos_escrever_arquivo_bin(FILE *arq, p_Documentos *vet_doc, int qtdDoc)
 {
-    int i=0, j=0, tam_documento = 0, tam_nome_classe = 0;
+    int i=0, j=0, tam_documento = 0, tam_nome_classe = 0, tam_palavra;
 
-    fwrite(&qtdDoc, 1, sizeof(int), arq);//qtd de palavras int
-    
     for ( i = 0; i < qtdDoc; i++)
     {
-        fwrite(&(vet_doc[i]->idx), 1, sizeof(int), arq);//idx de palavra int
 
-        fwrite(&(vet_doc[i]->tam_vet), 1, sizeof(int), arq);//tam_palavra int
+        fwrite(&(vet_doc[i]->idx), 1, sizeof(int), arq);//idx de documentos int
+
+        fwrite(&(vet_doc[i]->tam_vet), 1, sizeof(int), arq);//tam_vet int
 
         tam_documento = strlen(vet_doc[i]->nome_doc)+1;
-        fwrite(&(tam_documento), 1, sizeof(int), arq);//tam_palavra int
+        fwrite(&(tam_documento), 1, sizeof(int), arq);//tam_nome int
         
-        fwrite(vet_doc[i]->nome_doc, tam_documento, sizeof(char), arq);//palavra char (* tam_palavra)
+        fwrite(vet_doc[i]->nome_doc, tam_documento, sizeof(char), arq);//nome char (* tam_nome)
 
         tam_nome_classe = strlen(vet_doc[i]->classe)+1;
-        fwrite(&(tam_nome_classe), 1, sizeof(int), arq);//tam_palavra int
+        fwrite(&(tam_nome_classe), 1, sizeof(int), arq);//tam_classe int
 
-        fwrite(vet_doc[i]->classe, tam_nome_classe, sizeof(char), arq);//palavra char (* tam_palavra)
+        fwrite(vet_doc[i]->classe, tam_nome_classe, sizeof(char), arq);//clase char (* tam_clasee)
         
         for (j = 0; j < vet_doc[i]->tam_vet; j++)
         {
-            fwrite(&(vet_doc[i]->vet->Frequencia), 1, sizeof(int), arq);//idx doc int
-
-            //fwrite(&(vet_doc[i]->vet->IdxPalavra), 1, sizeof(int), arq);//freq int
+            tam_palavra = strlen(vet_doc[i]->vet[j].palavra)+1;
+            fwrite(&(tam_palavra), 1, sizeof(int), arq);//tam_palavra int
             
-            fwrite(&(vet_doc[i]->vet->TFIDF), 1, sizeof(double), arq);//TFIDF double
+            fwrite(vet_doc[i]->vet[j].palavra, tam_palavra, sizeof(char), arq);//palavra char (* tam_palavra)
+
+            fwrite(&(vet_doc[i]->vet[j].Frequencia), 1, sizeof(int), arq);//freq int
+
+            fwrite(&(vet_doc[i]->vet[j].TFIDF), 1, sizeof(double), arq);//TFIDF double
+        }
+    }
+}
+
+
+/*Ordem de leitura:
+    idx de doc                      - int
+    tam_vet                         - int
+    tam_nome_doc                    - int
+    nome doc                        - char (* tam_nome_doc)
+    tam_nome_classe                 - int
+    classe                          - char (* tam_nome_classe)
+    vet[tam_vet]:                   - IndiceDocumentos
+        tam_palavra                 - int     
+        palavra                     - char *
+        freq                        - int
+        TFIDF                       - double
+*/
+void documentos_le_arquivo_bin(FILE *arq, p_Documentos *vet_doc, int qtdDoc)
+{
+    int i=0, j=0, tam_documento = 0, tam_nome_classe = 0, tam_palavra;
+
+    for ( i = 0; i < qtdDoc; i++)
+    {
+        vet_doc[i] = (p_Documentos)calloc(1,sizeof(struct Documentos));//alocacao
+
+        fread(&(vet_doc[i]->idx), 1, sizeof(int), arq);//idx de documentos int
+
+        fread(&(vet_doc[i]->tam_vet), 1, sizeof(int), arq);//tam_vet int
+
+        fread(&(tam_documento), 1, sizeof(int), arq);//tam_nome int
+        
+        vet_doc[i]->nome_doc = (char *)calloc(tam_documento, sizeof(char));//alocacao
+        fread(vet_doc[i]->nome_doc, tam_documento, sizeof(char), arq);//nome char (* tam_nome)
+
+        fread(&(tam_nome_classe), 1, sizeof(int), arq);//tam_classe int
+
+        vet_doc[i]->classe = (char *)calloc(tam_nome_classe, sizeof(char));//alocacao
+        fread(vet_doc[i]->classe, tam_nome_classe, sizeof(char), arq);//clase char (* tam_clasee)
+        
+        vet_doc[i]->vet = (IndiceDocumentos *)calloc(vet_doc[i]->tam_vet, sizeof(IndiceDocumentos));//alocacao
+
+        for (j = 0; j < vet_doc[i]->tam_vet; j++)
+        {
+            fread(&(tam_palavra), 1, sizeof(int), arq);//tam_palavra int
+            
+            vet_doc[i]->vet[j].palavra = (char *)calloc(tam_palavra, sizeof(char));//alocacao
+            fread(vet_doc[i]->vet[j].palavra, tam_palavra, sizeof(char), arq);//palavra char (* tam_palavra)
+
+            fread(&(vet_doc[i]->vet[j].Frequencia), 1, sizeof(int), arq);//freq int
+
+            fread(&(vet_doc[i]->vet[j].TFIDF), 1, sizeof(double), arq);//TFIDF double
         }
     }
 }

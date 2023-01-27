@@ -1,4 +1,6 @@
 #pragma once
+#include <stdio.h>
+#include <stdlib.h>
 
 typedef struct HashTable *p_HashTable;
 
@@ -21,5 +23,9 @@ p_HashTable hash_calcula_tfidf(p_HashTable);
 p_HashTable hash_preenche_tfidf_docs(p_HashTable);
 
 double hash_return_tfidf(p_HashTable,int,char*);
+
+void hash_escrever_arquivo_bin(p_HashTable, FILE *arq);
+
+void hash_le_arquivo_bin(p_HashTable, FILE *arq);
 
 void hash_free(p_HashTable);

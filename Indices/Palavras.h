@@ -26,4 +26,6 @@ double palavras_busca_TFIDF(p_Palavras,int);
 
 void palavras_escrever_arquivo_bin(FILE *arq, p_Palavras *vet_pal, int qtdPal);
 
+void palavras_le_arquivo_bin(FILE *arq, p_Palavras *vet_pal, int qtdPal);
+
 void palavras_free(p_Palavras);

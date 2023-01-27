@@ -16,4 +16,6 @@ p_Documentos documentos_preenche_tfidf(p_HashTable,p_Documentos);
 
 void documentos_escrever_arquivo_bin(FILE*,p_Documentos*,int);
 
+void documentos_le_arquivo_bin(FILE*,p_Documentos*,int);
+
 p_Documentos documentos_registra_frequencia(p_Documentos,char*);
