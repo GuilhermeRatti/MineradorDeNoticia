@@ -25,7 +25,7 @@ run_p:
 	./principal out.bin 10
 
 val_b:
-	@valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes --log-file=valgrind-out.txt -s ./builder data/tiny/train.txt out.bin
+	@valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes --log-file=valgrind-out.txt -s ./builder data/large/train.txt out.bin
 
 val_p:
 	@valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes --log-file=valgrind-out.txt -s ./principal out.bin 10

@@ -24,6 +24,8 @@ p_HashTable hash_preenche_tfidf_docs(p_HashTable);
 
 double hash_return_tfidf(p_HashTable,int,char*);
 
+p_HashTable hash_calcula_centroides(p_HashTable);
+
 void hash_escrever_arquivo_bin(p_HashTable, FILE *arq);
 
 void hash_le_arquivo_bin(p_HashTable, FILE *arq);
