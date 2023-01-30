@@ -1,8 +1,8 @@
 #include "Documentos.h"
-#include "HashTable.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <math.h>
 
 typedef struct
 {
@@ -93,20 +93,32 @@ p_Documentos documentos_cria(char*classe,char*diretorio, int idx)
     return doc;
 }
 
-void documentos_retorna_classe(p_Documentos doc, char** classe_out)
+char * documentos_retorna_classe(p_Documentos doc)
 {
-    strcpy(*classe_out,doc->classe);
+    return doc->classe;
 }
+
+int documentos_retorna_id(p_Documentos doc)
+{
+    return doc->idx;
+}
+
+int documentos_retorna_quantidade_palavras(p_Documentos doc)
+{
+    return doc->tam_vet;
+}
+
+
 
 void documentos_imprime(p_Documentos doc)
 {
     printf("\nNOME: %s\nCLASSE: %s\nN_DOCS: %d\n",doc->nome_doc,doc->classe,doc->tam_vet);
-    int i;
+    //int i;
 
-    // for(i=0;i<doc->tam_vet;i++)
-    // {
-    //     printf("ID: %d, Freq: %d, TFIDF: %.2f\n",hash_get_index(doc->vet[i].palavra),doc->vet[i].Frequencia,doc->vet[i].TFIDF);
-    // }
+    for(i=0;i<doc->tam_vet;i++)
+    {
+        printf("Palavra: %s, Freq: %d, TFIDF: %.2f\n",doc->vet[i].palavra,doc->vet[i].Frequencia,doc->vet[i].TFIDF);
+    }
 }
 
 p_Documentos documentos_registra_frequencia(p_Documentos doc, char *palavra)
@@ -132,13 +144,27 @@ p_Documentos documentos_registra_frequencia(p_Documentos doc, char *palavra)
     return doc;
 }
 
-p_Documentos documentos_preenche_tfidf(p_HashTable table, p_Documentos doc){
+int documentos_requisita_idf(p_Documentos doc,char***palavras_out){
 
     int i;
+    (*palavras_out) = (char**)calloc(doc->tam_vet,sizeof(char*));
+
 
     for(i=0;i<doc->tam_vet;i++)
     {
-        doc->vet[i].TFIDF = hash_return_tfidf(table,doc->idx,doc->vet[i].palavra);
+        (*palavras_out)[i] = (char*)calloc(50,sizeof(char));
+        strcpy((*palavras_out)[i],doc->vet[i].palavra);
+    }
+
+    return doc->tam_vet;
+}
+
+p_Documentos documentos_preenche_TFIDF(p_Documentos doc, double* tfidfs)
+{
+    int i;
+    for(i=0;i<doc->tam_vet;i++)
+    {
+        doc->vet[i].TFIDF = tfidfs[i];
     }
 
     return doc;
@@ -168,6 +194,26 @@ p_Documentos documentos_preenche_centroide(p_Documentos doc, p_Documentos centro
     }
 
     return centroide;
+}
+
+double documentos_calcula_cosseno(p_Documentos doc1, p_Documentos doc2)
+{
+    double upper_part=0,lower_part_doc1=0,lower_part_doc2=0;
+    int i;
+    IndiceDocumentos *item;
+
+    for(i=0;i<doc1->tam_vet;i++)
+    {
+        item = (IndiceDocumentos*)bsearch(&(doc1->vet[i]),doc2->vet,doc2->tam_vet,sizeof(IndiceDocumentos),compara_indices_doc);
+        if(item!=NULL && (*item).TFIDF!=0 && doc1->vet[i].TFIDF!=0)
+        {
+            upper_part += (*item).TFIDF * doc1->vet[i].TFIDF;
+            lower_part_doc1 += pow(doc1->vet[i].TFIDF,2);
+            lower_part_doc2 += pow((*item).TFIDF,2);
+        }
+    }
+
+    return upper_part/(sqrt(lower_part_doc1)* sqrt(lower_part_doc2));
 }
 
 p_Documentos documentos_calcula_media_centroide(p_Documentos centroide)
@@ -266,7 +312,7 @@ void documentos_le_arquivo_bin(FILE *arq, p_Documentos *vet_doc, int qtdDoc)
         fread(vet_doc[i]->classe, tam_nome_classe, sizeof(char), arq);//clase char (* tam_clasee)
         
         vet_doc[i]->vet = (IndiceDocumentos *)calloc(vet_doc[i]->tam_vet, sizeof(IndiceDocumentos));//alocacao
-
+        vet_doc[i]->tam_allcd = vet_doc[i]->tam_vet;
         for (j = 0; j < vet_doc[i]->tam_vet; j++)
         {
             fread(&(tam_palavra), 1, sizeof(int), arq);//tam_palavra int
@@ -280,6 +326,7 @@ void documentos_le_arquivo_bin(FILE *arq, p_Documentos *vet_doc, int qtdDoc)
         }
     }
 }
+
 
 void documentos_free(p_Documentos doc)
 {
