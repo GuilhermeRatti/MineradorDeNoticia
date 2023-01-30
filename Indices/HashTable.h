@@ -28,6 +28,8 @@ p_HashTable hash_calcula_centroides(p_HashTable);
 
 void hash_escrever_arquivo_bin(p_HashTable, FILE *arq);
 
-void hash_le_arquivo_bin(p_HashTable, FILE *arq);
+p_HashTable hash_le_arquivo_bin(p_HashTable, FILE *arq);
+
+void hash_classifica_doc(p_HashTable);
 
 void hash_free(p_HashTable);

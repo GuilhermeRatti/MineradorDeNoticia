@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include "Classificadores.h"
 
 int SIZE_OF_TABLE = 23131;
 
@@ -139,7 +140,6 @@ void hash_imprime_palavra(p_HashTable table,char* palavra)
 void hash_imprime_documento(p_HashTable table,int posicao)
 {
     documentos_imprime(table->doc_table[posicao]);
-    documentos_imprime(table->class_table[posicao]);
 }
 
 p_HashTable hash_calcula_tfidf(p_HashTable table)
@@ -333,7 +333,7 @@ void hash_escrever_arquivo_bin(p_HashTable table, FILE *arq)
                 	TFIDF                       - double
         }
 */
-void hash_le_arquivo_bin(p_HashTable table, FILE *arq)
+p_HashTable hash_le_arquivo_bin(p_HashTable table, FILE *arq)
 {
     int i=0, qtd_pal_local = 0;
 
@@ -364,6 +364,21 @@ void hash_le_arquivo_bin(p_HashTable table, FILE *arq)
     table->class_table = (p_Documentos*)realloc(table->class_table,table->qtd_class*sizeof(p_Documentos));
 
     documentos_le_arquivo_bin(arq,table->class_table,table->qtd_class);
+
+    table->doc_allcd = table->qtd_doc;
+    table->class_allcd = table->qtd_class;
+    table->pal_allcd = SIZE_OF_TABLE;
+
+    return table;
+}
+
+void hash_classifica_doc(p_HashTable table)
+{
+    Classificador modelo1 = classificadores_retorna_tipo(K_NEAREST_NEIGHBOURS);
+    modelo1(table->doc_table,table->doc_table[table->qtd_doc]);
+
+    Classificador modelo2 = classificadores_retorna_tipo(CENTROIDE_MAIS_PROXIMA);
+    modelo2(table->doc_table,table->doc_table[table->qtd_doc]);
 }
 
 

@@ -1,8 +1,8 @@
 all: maker
 
 CC = gcc
-CODIGOS = Indices/Documentos.c Indices/Palavras.c Indices/FileManager.c Indices/HashTable.c
-HEADERS = Indices/Documentos.h Indices/Palavras.h Indices/FileManager.h Indices/HashTable.h
+CODIGOS = Indices/Documentos.c Indices/Palavras.c Indices/FileManager.c Indices/HashTable.c Indices/Classificadores.c
+HEADERS = Indices/Documentos.h Indices/Palavras.h Indices/FileManager.h Indices/HashTable.h Indices/Classificadores.h
 override CFLAGS += -ggdb3 -lm -Wall
 
 libIndices.a: $(CODIGOS) $(HEADERS)
@@ -10,7 +10,8 @@ libIndices.a: $(CODIGOS) $(HEADERS)
 	gcc -c Indices/Palavras.c -o Indices/Palavras.o $(CFLAGS)
 	gcc -c Indices/HashTable.c -o Indices/HashTable.o $(CFLAGS)
 	gcc -c Indices/FileManager.c -o Indices/FileManager.o $(CFLAGS)
-	ar -crs libIndices.a Indices/Documentos.o Indices/Palavras.o Indices/FileManager.o Indices/HashTable.o
+	gcc -c Indices/Classificadores.c -o Indices/Classificadores.o $(CFLAGS)
+	ar -crs libIndices.a Indices/Documentos.o Indices/Palavras.o Indices/FileManager.o Indices/HashTable.o Indices/Classificadores.o
 
 builder: libIndices.a ConstrutorIndices.c
 	$(CC) -o builder ConstrutorIndices.c -I Indices -L . -lIndices $(CFLAGS)
@@ -25,7 +26,7 @@ run_p:
 	./principal out.bin 10
 
 val_b:
-	@valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes --log-file=valgrind-out.txt -s ./builder data/large/train.txt out.bin
+	@valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes --log-file=valgrind-out.txt -s ./builder data/tiny/train.txt out.bin
 
 val_p:
 	@valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes --log-file=valgrind-out.txt -s ./principal out.bin 10

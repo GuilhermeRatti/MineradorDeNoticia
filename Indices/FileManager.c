@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+
 p_HashTable manager_read_txt(FILE* arqEntrada, char* caminho_relativo, p_HashTable table)
 {
     char linha[100];
@@ -44,5 +45,45 @@ p_HashTable manager_read_txt(FILE* arqEntrada, char* caminho_relativo, p_HashTab
         fclose(documento);
     }
 
+    return table;
+}
+
+p_HashTable manager_read_from_terminal(p_HashTable table, int *qtd_texto_digitados)
+{
+    char palavra[50],ch,nome[50],classe[4];
+    int palavra_hash,i=0;
+
+    sprintf(nome,"Teste%d.txt",(*qtd_texto_digitados));
+    (*qtd_texto_digitados)++;
+    sprintf(classe,"tbd");
+    table = hash_register_new_doc(table, classe, nome);
+
+    printf("Digite um texto em uma unica linha para avalia-lo, e pressione ENTER quando tiver digitado tudo desejado.\n");
+
+    while (1)
+    {
+        scanf("%c",&ch);
+        
+        if(ch==' ' || ch=='\n')
+        {
+            palavra[i] = '\0';  
+            i=0;
+            palavra_hash = hash_get_index(palavra);
+            table = hash_register_new_item(table,palavra,palavra_hash);
+        }
+        else
+        {
+            palavra[i] = ch;
+            i++;
+        }
+
+        if(ch=='\n')
+        {
+            break;
+        }
+    }
+
+    hash_classifica_doc(table);
+    
     return table;
 }

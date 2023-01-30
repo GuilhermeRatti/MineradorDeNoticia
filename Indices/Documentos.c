@@ -266,7 +266,7 @@ void documentos_le_arquivo_bin(FILE *arq, p_Documentos *vet_doc, int qtdDoc)
         fread(vet_doc[i]->classe, tam_nome_classe, sizeof(char), arq);//clase char (* tam_clasee)
         
         vet_doc[i]->vet = (IndiceDocumentos *)calloc(vet_doc[i]->tam_vet, sizeof(IndiceDocumentos));//alocacao
-
+        vet_doc[i]->tam_allcd = vet_doc[i]->tam_vet;
         for (j = 0; j < vet_doc[i]->tam_vet; j++)
         {
             fread(&(tam_palavra), 1, sizeof(int), arq);//tam_palavra int

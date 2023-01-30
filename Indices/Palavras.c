@@ -241,6 +241,7 @@ void palavras_le_arquivo_bin(FILE *arq, p_Palavras *vet_pal, int qtdPal)
         fread(vet_pal[i]->palavra, tam_palavra, sizeof(char), arq);//palavra char (* tam_palavra)
 
         vet_pal[i]->vet = (IndicePalavras *)calloc(vet_pal[i]->tam_vet, sizeof(IndicePalavras));//alocacao
+        vet_pal[i]->tam_allcd = vet_pal[i]->tam_vet;
 
         for (j = 0; j < vet_pal[i]->tam_vet; j++)
         {

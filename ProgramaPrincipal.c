@@ -5,7 +5,6 @@
 #include <string.h>
 #include <ctype.h>
 
-
 int main(int argc, char const *argv[])
 {
     if(argc < 2)
@@ -32,15 +31,17 @@ int main(int argc, char const *argv[])
         exit(printf("ERRO: ARQUIVO BINARIO NAO ENCONTRADO"));
     }    
 
-    hash_le_arquivo_bin(table, bin);
+    table = hash_le_arquivo_bin(table, bin);
 
     fclose(bin);
-  
-    
-    hash_imprime_palavra(table,"judiciario");
-    hash_imprime_documento(table,1);
+    int holder = 1;
+    table = manager_read_from_terminal(table,&holder);
 
-    hash_print_amount_of_items(table);
+    hash_imprime_palavra(table,"judiciario");
+    hash_imprime_documento(table,15);
 
     hash_free(table);
+
+    
+
 }
