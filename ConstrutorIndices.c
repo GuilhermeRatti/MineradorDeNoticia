@@ -62,15 +62,13 @@ int main(int argc, char const *argv[])
     caminho_relativo[strlen(caminho_relativo) - i + 1]='\0';
 
     p_HashTable table = hash_initialize_table();
-    table = manager_read_txt(arqEntrada, caminho_relativo, table);
-    table = hash_calcula_tfidf(table);
-    table = hash_calcula_centroides(table);
+    table = manager_read_txt(arqEntrada, caminho_relativo, table, TRAIN);
 
     free(caminho_relativo);
     fclose(arqEntrada);
     
-    //hash_imprime_palavra(table,"judiciario");
-    //hash_imprime_documento(table,1);
+    hash_imprime_palavra(table,"judiciario");
+    hash_imprime_documento(table,1);
 
     hash_print_amount_of_items(table);
 

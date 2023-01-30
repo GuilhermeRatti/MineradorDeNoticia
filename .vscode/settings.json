@@ -3,7 +3,9 @@
         "stdlib.h": "c",
         "stdio.h": "c",
         "documentos.h": "c",
-        "hashtable.h": "c"
+        "hashtable.h": "c",
+        "classificadores.h": "c",
+        "string.h": "c"
     },
     "C_Cpp.errorSquiggles": "disabled"
 }

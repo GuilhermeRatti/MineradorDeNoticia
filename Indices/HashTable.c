@@ -559,7 +559,7 @@ Exibe os 10 documentos mais longos e os 10 mais curtos com o número de
 palavras e as respectivas classes. As listas devem ser ordenadas, a primeira do maior para o menor e a
 segunda do menor para o maior. A ordenação deve ser feita ao selecionar a opção usando a função qsort.
 */
-void hash_realtorio_documentos(p_HashTable table)
+void hash_relatorio_documentos(p_HashTable table)
 {
     int qtd_org_doc = 0, i = 0;
     p_Documentos documento_atual;

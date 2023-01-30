@@ -38,6 +38,6 @@ void hash_buscar_noticias(p_HashTable table, char *texto);
 
 void hash_relatorio_noticias(p_HashTable table, char *palavra_relatorio);
 
-void hash_realtorio_documentos(p_HashTable table);
+void hash_relatorio_documentos(p_HashTable table);
 
 void hash_free(p_HashTable);

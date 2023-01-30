@@ -147,5 +147,5 @@ void executa_relatorio_noticias(p_HashTable table)
 
 void executa_relatorio_documento(p_HashTable table)
 {
-    hash_realtorio_documentos(table);
+    hash_relatorio_documentos(table);
 }
