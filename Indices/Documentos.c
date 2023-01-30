@@ -148,13 +148,18 @@ p_Documentos documentos_registra_frequencia(p_Documentos doc, char *palavra)
 int documentos_requisita_idf(p_Documentos doc,char***palavras_out){
 
     int i;
+    (*palavras_out) = (char**)calloc(doc->tam_vet,sizeof(char*));
+
+
+    return doc->tam_vet;
+}
 
 p_Documentos documentos_preenche_TFIDF(p_Documentos doc, double* tfidfs)
 {
     int i;
     for(i=0;i<doc->tam_vet;i++)
     {
-        doc->vet[i].TFIDF = hash_return_tfidf(table,doc->idx,doc->vet[i].palavra);
+        doc->vet[i].TFIDF = tfidfs[i];
     }
 
     return doc;
@@ -184,26 +189,6 @@ p_Documentos documentos_preenche_centroide(p_Documentos doc, p_Documentos centro
     }
 
     return centroide;
-}
-
-double documentos_calcula_cosseno(p_Documentos doc1, p_Documentos doc2)
-{
-    double upper_part=0,lower_part_doc1=0,lower_part_doc2=0;
-    int i;
-    IndiceDocumentos *item;
-
-    for(i=0;i<doc1->tam_vet;i++)
-    {
-        item = (IndiceDocumentos*)bsearch(&(doc1->vet[i]),doc2->vet,doc2->tam_vet,sizeof(IndiceDocumentos),compara_indices_doc);
-        if(item!=NULL && (*item).TFIDF!=0 && doc1->vet[i].TFIDF!=0)
-        {
-            upper_part += (*item).TFIDF * doc1->vet[i].TFIDF;
-            lower_part_doc1 += pow(doc1->vet[i].TFIDF,2);
-            lower_part_doc2 += pow((*item).TFIDF,2);
-        }
-    }
-
-    return upper_part/(sqrt(lower_part_doc1)* sqrt(lower_part_doc2));
 }
 
 double documentos_calcula_cosseno(p_Documentos doc1, p_Documentos doc2)
