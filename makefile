@@ -12,23 +12,23 @@ libIndices.a: $(CODIGOS) $(HEADERS)
 	gcc -c Indices/FileManager.c -o Indices/FileManager.o $(CFLAGS)
 	ar -crs libIndices.a Indices/Documentos.o Indices/Palavras.o Indices/FileManager.o Indices/HashTable.o
 
-builder: libIndices.a ConstrutorIndices.c
-	$(CC) -o builder ConstrutorIndices.c -I Indices -L . -lIndices $(CFLAGS)
+construtor: libIndices.a ConstrutorIndices.c
+	$(CC) -o construtor ConstrutorIndices.c -I Indices -L . -lIndices $(CFLAGS)
 
 principal: libIndices.a ProgramaPrincipal.c
 	$(CC) -o principal ProgramaPrincipal.c -I Indices -L . -lIndices $(CFLAGS)
 
-run_b:
-	./builder data/tiny/train.txt out.bin
+run_c:
+	./construtor data/tiny/train.txt out.bin
 
 run_p:
-	./principal out.bin 10
+	./principal out_tiny.bin 10
 
-val_b:
-	@valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes --log-file=valgrind-out.txt -s ./builder data/large/train.txt out.bin
+val_c:
+	@valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes --log-file=valgrind-construtor-out.txt -s ./construtor data/tiny/train.txt out_tiny.bin
 
 val_p:
-	@valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes --log-file=valgrind-out.txt -s ./principal out.bin 10
+	@valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes --log-file=val-principal-out.txt -s ./principal out_medium_large.bin 10
 	
 clean:
 	@rm -f main builder *.a Indices/*.o *.txt *.bin

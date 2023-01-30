@@ -73,21 +73,10 @@ int main(int argc, char const *argv[])
     //hash_imprime_documento(table,1);
 
     hash_print_amount_of_items(table);
-    
-    
 
     //**Save das listas em arquivos binarios:
 
-    FILE *bin = fopen(argv[2], "wb");
- 
-    if (bin == NULL)
-    {
-         exit(printf("ERRO AO ESCREVER ARQUIVO BINARIO"));
-    }
-    
-    hash_escrever_arquivo_bin(table, bin);
-    
-    fclose(bin);
+    hash_escrever_arquivo_bin(table, argv[2]);    
 
     hash_free(table);
 

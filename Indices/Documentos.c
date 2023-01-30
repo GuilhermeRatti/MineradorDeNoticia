@@ -93,15 +93,27 @@ p_Documentos documentos_cria(char*classe,char*diretorio, int idx)
     return doc;
 }
 
-void documentos_retorna_classe(p_Documentos doc, char** classe_out)
+char * documentos_retorna_classe(p_Documentos doc)
 {
-    strcpy(*classe_out,doc->classe);
+    return doc->classe;
 }
+
+int documentos_retorna_id(p_Documentos doc)
+{
+    return doc->idx;
+}
+
+int documentos_retorna_quantidade_palavras(p_Documentos doc)
+{
+    return doc->tam_vet;
+}
+
+
 
 void documentos_imprime(p_Documentos doc)
 {
     printf("\nNOME: %s\nCLASSE: %s\nN_DOCS: %d\n",doc->nome_doc,doc->classe,doc->tam_vet);
-    int i;
+    //int i;
 
     // for(i=0;i<doc->tam_vet;i++)
     // {
@@ -280,6 +292,7 @@ void documentos_le_arquivo_bin(FILE *arq, p_Documentos *vet_doc, int qtdDoc)
         }
     }
 }
+
 
 void documentos_free(p_Documentos doc)
 {

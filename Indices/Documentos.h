@@ -16,7 +16,11 @@ void documentos_free(p_Documentos);
 
 void documentos_imprime(p_Documentos);
 
-void documentos_retorna_classe(p_Documentos,char**);
+char *documentos_retorna_classe(p_Documentos);
+
+int documentos_retorna_id(p_Documentos doc);
+
+int documentos_retorna_quantidade_palavras(p_Documentos doc);
 
 p_Documentos documentos_preenche_tfidf(p_HashTable,p_Documentos);
 

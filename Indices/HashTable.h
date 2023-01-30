@@ -4,6 +4,9 @@
 
 typedef struct HashTable *p_HashTable;
 
+
+int hash_palavra_verfica_existencia(p_HashTable table, char *palavra_alvo);
+
 p_HashTable hash_initialize_table();
 
 int hash_get_index(char*);
@@ -26,8 +29,15 @@ double hash_return_tfidf(p_HashTable,int,char*);
 
 p_HashTable hash_calcula_centroides(p_HashTable);
 
-void hash_escrever_arquivo_bin(p_HashTable, FILE *arq);
+void hash_escrever_arquivo_bin(p_HashTable, const char *arq);
 
-void hash_le_arquivo_bin(p_HashTable, FILE *arq);
+void hash_le_arquivo_bin(p_HashTable, const char *arq);
+
+
+void hash_buscar_noticias(p_HashTable table, char *texto);
+
+void hash_relatorio_noticias(p_HashTable table, char *palavra_relatorio);
+
+void hash_realtorio_documentos(p_HashTable table);
 
 void hash_free(p_HashTable);

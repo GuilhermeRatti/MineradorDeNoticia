@@ -20,6 +20,49 @@ struct Palavras
     IndicePalavras *vet;
 };
 
+int palavras_retorna_docs_quantidade(p_Palavras palavra)
+{
+    return palavra->tam_vet;
+}
+
+int *palavras_retorna_docs_ids(p_Palavras palavra)
+{
+    int i;
+    int *ids = (int *)calloc(palavra->tam_vet, sizeof(int));
+    for (i = 0; i < palavra->tam_vet; i++)
+    {
+        ids[i] = palavra->vet[i].IdxDocumento;
+    }
+
+    return ids;
+}
+
+
+int *palavras_retorna_docs_frequencia(p_Palavras palavra)
+{
+    int i;
+    int *freqeuncia = (int *)calloc(palavra->tam_vet, sizeof(int));
+    for (i = 0; i < palavra->tam_vet; i++)
+    {
+        freqeuncia[i] = palavra->vet[i].Frequencia;
+    }
+
+    return freqeuncia;
+}
+
+double *palavras_retorna_docs_TFIFDs(p_Palavras palavra)
+{
+    int i;
+    double *TFIDFs = (double *)calloc(palavra->tam_vet, sizeof(double));
+    for (i = 0; i < palavra->tam_vet; i++)
+    {
+        TFIDFs[i] = palavra->vet[i].TFIDF;
+    }
+
+    return TFIDFs;
+}
+
+
 int compara_palavras(const void *a, const void *b)
 {
     p_Palavras p1 = *((p_Palavras*)a), p2 = *((p_Palavras*)b);
@@ -46,14 +89,17 @@ p_Palavras palavras_cria(char* palavra, int pos)
     return p;
 }
 
-int palavras_verifica_existencia(p_Palavras* vet,int qtd, p_Palavras p)
-{
-    p_Palavras* item = (p_Palavras*)bsearch(&p,vet,qtd,sizeof(p_Palavras),compara_palavras);
-
-    if(item==NULL)
-        return 0;
-    else
-        return 1;
+int palavras_verifica_existencia(p_Palavras* vet,int qtd, char *palavra_alvo)
+{    
+    int i;
+    for (i = 0; i < qtd; i++)
+    {
+        if (!strcmp(vet[i]->palavra, palavra_alvo))
+        {   
+            return i;
+        }
+    }
+    return -1;
 }
 
 void palavras_organiza_ordem(p_Palavras* vet,int qtd)
