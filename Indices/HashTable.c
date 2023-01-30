@@ -82,6 +82,11 @@ int hash_get_index(char *palavra)
     return hash % SIZE_OF_TABLE;
 }
 
+int hash_retorna_qtd_doc(p_HashTable table)
+{
+    return table->qtd_doc;
+}
+
 p_HashTable hash_register_new_doc(p_HashTable table, char *classe, char *diretorio)
 {
     if (table->qtd_doc == table->doc_allcd)
@@ -164,58 +169,68 @@ void hash_imprime_documento(p_HashTable table, int posicao)
     documentos_imprime(table->class_table[posicao]);
 }
 
-p_HashTable hash_calcula_tfidf(p_HashTable table)
+p_HashTable hash_calcula_IDF(p_HashTable table)
 {
-    int i, j, qtd_tfidf, qtd;
-
-    for (i = 0; i < table->pal_allcd; i++)
+    int i,j;
+    for(i=0;i<SIZE_OF_TABLE;i++)
     {
-        HashIndex id_desejado = table->pal_table[i];
-        qtd = id_desejado.qtd_palavras_no_indice;
-        for (j = 0; j < qtd; j++)
+        for(j=0;j<table->pal_table[i].qtd_palavras_no_indice;j++)
         {
-            double *vet_tfidf = (double *)malloc(sizeof(double));
-            int *vet_docs = (int *)malloc(sizeof(int));
-
-            id_desejado.vet_indice[j] = palavras_preenche_tfidf(id_desejado.vet_indice[j], table->qtd_doc, &vet_tfidf, &vet_docs, &qtd_tfidf);
-            free(vet_docs);
-            free(vet_tfidf);
+            table->pal_table[i].vet_indice[j] = palavras_preenche_IDF(table->pal_table[i].vet_indice[j],table->qtd_doc);
         }
     }
-
-    table = hash_preenche_tfidf_docs(table);
-
     return table;
 }
 
-p_HashTable hash_preenche_tfidf_docs(p_HashTable table)
+p_HashTable hash_calcula_TFIDF(p_HashTable table,int beginning)
 {
-    int i;
-
-    for (i = 0; i < table->qtd_doc; i++)
+    int i,j,k,hash,match=1;
+    for(i=beginning;i<table->qtd_doc;i++)
     {
-        table->doc_table[i] = documentos_preenche_tfidf(table, table->doc_table[i]);
-    }
+        char **palavras;
+        int qtd;
+        qtd = documentos_requisita_TFIDF(table->doc_table[i],&palavras);
+        double tfidf[qtd];
 
-    return table;
-}
-
-double hash_return_tfidf(p_HashTable table, int doc, char *palavra)
-{
-    int i, match, hash = hash_get_index(palavra);
-    p_Palavras p = palavras_cria(palavra, 0); // Encapsulando a palavra pra fazer comparacao
-
-    for (i = 0; i < table->pal_table[hash].qtd_palavras_no_indice; i++)
-    {
-        match = compara_palavras(&p, &(table->pal_table[hash].vet_indice[i]));
-        if (!match)
+        for(j=0;j<qtd;j++)
         {
+            hash = hash_get_index(palavras[j]);
+            p_Palavras p = palavras_cria(palavras[j],hash);
+
+            for(k=0;k<table->pal_table[hash].qtd_palavras_no_indice;k++)
+            {
+                match = compara_palavras(&p,&(table->pal_table[hash].vet_indice[k]));
+                if(!match)
+                    break;
+            }
             palavras_free(p);
-            break;
+
+            tfidf[j] = palavras_busca_e_preenche_TFIDF(&(table->pal_table[hash].vet_indice[k]),i);
         }
+        free(palavras);
+        table->doc_table[i] = documentos_preenche_TFIDF(table->doc_table[i],tfidf);
     }
 
-    return palavras_busca_TFIDF(table->pal_table[hash].vet_indice[i], doc);
+    // int i, j, qtd_tfidf, qtd;
+
+    // for (i = 0; i < table->pal_allcd; i++)
+    // {
+    //     HashIndex id_desejado = table->pal_table[i];
+    //     qtd = id_desejado.qtd_palavras_no_indice;
+    //     for (j = 0; j < qtd; j++)
+    //     {
+    //         double *vet_tfidf = (double *)malloc(sizeof(double));
+    //         int *vet_docs = (int *)malloc(sizeof(int));
+
+    //         id_desejado.vet_indice[j] = palavras_preenche_tfidf(id_desejado.vet_indice[j], table->qtd_doc, &vet_tfidf, &vet_docs, &qtd_tfidf);
+    //         free(vet_docs);
+    //         free(vet_tfidf);
+    //     }
+    // }
+
+    // table = hash_preenche_tfidf_docs(table);
+
+    return table;
 }
 
 p_HashTable hash_calcula_centroides(p_HashTable table)

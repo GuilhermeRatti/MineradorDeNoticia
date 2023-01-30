@@ -30,7 +30,7 @@ void palavras_imprime_informacoes(p_Palavras);
 
 p_Palavras palavras_preenche_IDF(p_Palavras, int);
 
-double palavras_preenche_TFIDF(p_Palavras*, int);
+double palavras_busca_e_preenche_TFIDF(p_Palavras*, int);
 
 double palavras_preenche_e_retorna_TFIDF(p_Palavras *p, int doc);
 

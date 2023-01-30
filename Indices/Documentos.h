@@ -20,7 +20,7 @@ int documentos_retorna_id(p_Documentos doc);
 
 int documentos_retorna_quantidade_palavras(p_Documentos doc);
 
-int documentos_requisita_idf(p_Documentos,char***);
+int documentos_requisita_TFIDF(p_Documentos,char***);
 
 p_Documentos documentos_preenche_TFIDF(p_Documentos, double*);
 

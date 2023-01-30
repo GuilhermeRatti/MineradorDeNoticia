@@ -190,7 +190,7 @@ p_Palavras palavras_preenche_IDF(p_Palavras p, int qtdDoc)
     return p;
 }
 
-double palavras_preenche_TFIDF(p_Palavras *p, int doc)
+double palavras_busca_e_preenche_TFIDF(p_Palavras *p, int doc)
 {
     IndicePalavras holder;
     holder.IdxDocumento = doc;

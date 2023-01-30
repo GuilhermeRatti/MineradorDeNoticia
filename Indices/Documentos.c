@@ -109,8 +109,6 @@ int documentos_retorna_quantidade_palavras(p_Documentos doc)
     return doc->tam_vet;
 }
 
-
-
 void documentos_imprime(p_Documentos doc)
 {
     printf("\nNOME: %s\nCLASSE: %s\nN_DOCS: %d\n",doc->nome_doc,doc->classe,doc->tam_vet);
@@ -124,7 +122,6 @@ void documentos_imprime(p_Documentos doc)
 
 p_Documentos documentos_registra_frequencia(p_Documentos doc, char *palavra)
 {
-    
     int ja_registrada = documentos_verifica_registrado(palavra,0,doc->tam_vet,doc->vet);
     if(ja_registrada)
         return doc;
@@ -145,11 +142,15 @@ p_Documentos documentos_registra_frequencia(p_Documentos doc, char *palavra)
     return doc;
 }
 
-int documentos_requisita_idf(p_Documentos doc,char***palavras_out){
+int documentos_requisita_TFIDF(p_Documentos doc,char***palavras_out){
 
     int i;
     (*palavras_out) = (char**)calloc(doc->tam_vet,sizeof(char*));
 
+    for(i=0;i<doc->tam_vet;i++)
+    {
+        (*palavras_out)[i] = doc->vet[i].palavra;
+    }
 
     return doc->tam_vet;
 }

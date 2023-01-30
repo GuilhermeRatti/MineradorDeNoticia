@@ -48,10 +48,10 @@ p_HashTable manager_read_txt(FILE* arqEntrada, char* caminho_relativo, p_HashTab
     }
     if(opcao == TRAIN)
     {
-        table = hash_calcula_idf(table);
+        table = hash_calcula_IDF(table);
     }
 
-    table = hash_calcula_tfidf(table,qtd_de_inicio);
+    table = hash_calcula_TFIDF(table,qtd_de_inicio);
 
     if(opcao == TRAIN)
         table = hash_calcula_centroides(table);
@@ -96,13 +96,7 @@ p_HashTable manager_read_from_terminal(p_HashTable table, int *qtd_texto_digitad
         }
     }
 
-    table = hash_calcula_tfidf(table,qtd_de_inicio);
-
-    Classificador modelo = classificadores_retorna_tipo(K_NEAREST_NEIGHBOURS);
-    p_Documentos *vet; 
-    int qtd = hash_get_dataset(table,&vet,K_NEAREST_NEIGHBOURS);
-
-    modelo(vet,qtd,hash_retorna_doc(table,qtd_de_inicio));
+    table = hash_calcula_TFIDF(table,qtd_de_inicio);
     
     return table;
 }
