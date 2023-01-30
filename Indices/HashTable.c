@@ -4,7 +4,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "Classificadores.h"
 
 int SIZE_OF_TABLE = 23131;
 
@@ -116,7 +115,7 @@ void hash_imprime_palavra(p_HashTable table,char* palavra)
     int hash = hash_get_index(palavra),i,match=0;
     HashIndex desired_index = table->pal_table[hash];
 
-    p_Palavras p = palavras_cria(palavra,0); // Encapsulando a palavra pra fazer comparacao
+    p_Palavras p = palavras_cria(palavra,hash); // Encapsulando a palavra pra fazer comparacao
 
     for(i=0;i< desired_index.qtd_palavras_no_indice;i++)
     {
@@ -142,50 +141,63 @@ void hash_imprime_documento(p_HashTable table,int posicao)
     documentos_imprime(table->doc_table[posicao]);
 }
 
-p_HashTable hash_calcula_tfidf(p_HashTable table)
+int hash_retorna_qtd_doc(p_HashTable table)
 {
-    int i,j,qtd_tfidf,qtd;
+    return table->qtd_doc;
+}
 
-    for(i=0;i<table->pal_allcd;i++)
+p_HashTable hash_calcula_idf(p_HashTable table)
+{
+    int i,j;
+    for(i=0;i<SIZE_OF_TABLE;i++)
     {
-        HashIndex id_desejado = table->pal_table[i];
-        qtd = id_desejado.qtd_palavras_no_indice;
+        for(j=0;j<table->pal_table[i].qtd_palavras_no_indice;j++)
+        table->pal_table[i].vet_indice[j] = palavras_preenche_IDF(table->pal_table[i].vet_indice[j],table->qtd_doc);
+    }
+
+    return table;
+}
+
+p_HashTable hash_calcula_tfidf(p_HashTable table, int beginning)
+{
+    int i,j,k,qtd,hash,match=1; 
+    for(i=beginning;i<table->qtd_doc;i++)
+    {
+        char **palavras;
+        qtd = documentos_requisita_idf(table->doc_table[i],&palavras);
+        double tfidfs[qtd];
+
         for(j=0;j<qtd;j++)
-        {
-            double *vet_tfidf = (double*)malloc(sizeof(double));
-            int *vet_docs = (int*)malloc(sizeof(int));
+        {   
+            hash = hash_get_index(palavras[j]);
+            for(k=0;k<table->pal_table->qtd_palavras_no_indice;k++)
+            {
+                p_Palavras p = palavras_cria(palavras[j],hash);
+                match = compara_palavras(&p,&(table->pal_table[hash].vet_indice[k]));
+                palavras_free(p);
+                if(!match)
+                    break;
+            }
 
-            id_desejado.vet_indice[j] = palavras_preenche_tfidf(id_desejado.vet_indice[j],table->qtd_doc, &vet_tfidf, &vet_docs,&qtd_tfidf);
-            free(vet_docs);
-            free(vet_tfidf);
+            tfidfs[j] = palavras_preenche_e_retorna_TFIDF(&(table->pal_table[hash].vet_indice[k]),i);
+            free(palavras[j]);
         }
-    }
-    
-    table = hash_preenche_tfidf_docs(table);
+        free(palavras);
 
-    return table;
-}
-
-p_HashTable hash_preenche_tfidf_docs(p_HashTable table)
-{
-    int i;
-
-    for(i=0;i<table->qtd_doc;i++)
-    {
-        table->doc_table[i] = documentos_preenche_tfidf(table,table->doc_table[i]);
+        table->doc_table[i] = documentos_preenche_TFIDF(table->doc_table[i],tfidfs);
     }
 
     return table;
 }
 
-double hash_return_tfidf(p_HashTable table, int doc, char*palavra)
+double hash_return_tfidf(p_HashTable *table, int doc, char*palavra)
 {
     int i,match,hash = hash_get_index(palavra);
-    p_Palavras p = palavras_cria(palavra,0); // Encapsulando a palavra pra fazer comparacao
+    p_Palavras p = palavras_cria(palavra,hash); // Encapsulando a palavra pra fazer comparacao
 
-    for(i=0;i<table->pal_table[hash].qtd_palavras_no_indice;i++)
+    for(i=0;i<(*table)->pal_table[hash].qtd_palavras_no_indice;i++)
     {
-        match = compara_palavras(&p,&(table->pal_table[hash].vet_indice[i]));
+        match = compara_palavras(&p,&((*table)->pal_table[hash].vet_indice[i]));
         if(!match)
         {
             palavras_free(p);
@@ -193,7 +205,7 @@ double hash_return_tfidf(p_HashTable table, int doc, char*palavra)
         }
     }
 
-    return palavras_busca_TFIDF(table->pal_table[hash].vet_indice[i],doc);
+    return palavras_preenche_TFIDF(&((*table)->pal_table[hash].vet_indice[i]),doc);
 }
 
 p_HashTable hash_calcula_centroides(p_HashTable table)
@@ -232,7 +244,6 @@ p_HashTable hash_calcula_centroides(p_HashTable table)
     for(i=0;i<table->qtd_class;i++)
     {
         table->class_table[i] = documentos_calcula_media_centroide(table->class_table[i]);
-        documentos_imprime(table->class_table[i]);
     }
 
     return table;
@@ -372,15 +383,31 @@ p_HashTable hash_le_arquivo_bin(p_HashTable table, FILE *arq)
     return table;
 }
 
-void hash_classifica_doc(p_HashTable table)
+int hash_get_dataset(p_HashTable table, p_Documentos **dataset_out, int opcao)
 {
-    Classificador modelo1 = classificadores_retorna_tipo(K_NEAREST_NEIGHBOURS);
-    modelo1(table->doc_table,table->doc_table[table->qtd_doc]);
 
-    Classificador modelo2 = classificadores_retorna_tipo(CENTROIDE_MAIS_PROXIMA);
-    modelo2(table->doc_table,table->doc_table[table->qtd_doc]);
+    if(opcao==1)
+    {
+        (*dataset_out) = table->doc_table;
+        return table->qtd_doc;
+    }
+
+    if(opcao==2)
+    {
+        (*dataset_out) = table->class_table;
+        return table->qtd_class;
+    }
+    else
+    {
+        (*dataset_out)=NULL;
+        return -1;
+    }
 }
 
+p_Documentos hash_retorna_doc(p_HashTable table, int doc)
+{
+    return table->doc_table[doc];
+}
 
 void hash_free(p_HashTable table)
 {

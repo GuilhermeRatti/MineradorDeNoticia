@@ -3,15 +3,17 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include "Classificadores.h"
 
-
-p_HashTable manager_read_txt(FILE* arqEntrada, char* caminho_relativo, p_HashTable table)
+p_HashTable manager_read_txt(FILE* arqEntrada, char* caminho_relativo, p_HashTable table, TIPO_LEITURA opcao)
 {
     char linha[100];
     char caminho[50];
     char classe[5];
     char palavra[50];
     int palavra_hash;
+
+    int qtd_de_inicio = hash_retorna_qtd_doc(table);
 
     // Cada linha do arqEntrada contem o caminho para um documento e a classe do documento especificado
 
@@ -44,6 +46,15 @@ p_HashTable manager_read_txt(FILE* arqEntrada, char* caminho_relativo, p_HashTab
 
         fclose(documento);
     }
+    if(opcao == TRAIN)
+    {
+        table = hash_calcula_idf(table);
+    }
+
+    table = hash_calcula_tfidf(table,qtd_de_inicio);
+
+    if(opcao == TRAIN)
+        table = hash_calcula_centroides(table);
 
     return table;
 }
@@ -52,6 +63,8 @@ p_HashTable manager_read_from_terminal(p_HashTable table, int *qtd_texto_digitad
 {
     char palavra[50],ch,nome[50],classe[4];
     int palavra_hash,i=0;
+
+    int qtd_de_inicio = hash_retorna_qtd_doc(table);
 
     sprintf(nome,"Teste%d.txt",(*qtd_texto_digitados));
     (*qtd_texto_digitados)++;
@@ -83,7 +96,13 @@ p_HashTable manager_read_from_terminal(p_HashTable table, int *qtd_texto_digitad
         }
     }
 
-    hash_classifica_doc(table);
+    table = hash_calcula_tfidf(table,qtd_de_inicio);
+
+    Classificador modelo = classificadores_retorna_tipo(K_NEAREST_NEIGHBOURS);
+    p_Documentos *vet; 
+    int qtd = hash_get_dataset(table,&vet,K_NEAREST_NEIGHBOURS);
+
+    modelo(vet,qtd,hash_retorna_doc(table,qtd_de_inicio));
     
     return table;
 }

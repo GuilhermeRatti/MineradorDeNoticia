@@ -20,9 +20,11 @@ void palavras_registra_indice(p_Palavras,int);
 
 void palavras_imprime_informacoes(p_Palavras);
 
-p_Palavras palavras_preenche_tfidf(p_Palavras p, int qtdDoc, double **vet_tfidf, int **vet_docs, int *qtd_tfidf);
+p_Palavras palavras_preenche_IDF(p_Palavras, int);
 
-double palavras_busca_TFIDF(p_Palavras,int);
+double palavras_preenche_TFIDF(p_Palavras*, int);
+
+double palavras_preenche_e_retorna_TFIDF(p_Palavras *p, int doc);
 
 void palavras_escrever_arquivo_bin(FILE *arq, p_Palavras *vet_pal, int qtdPal);
 

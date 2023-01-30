@@ -1,8 +1,6 @@
 #pragma once
 #include <stdio.h>
 #include <stdlib.h>
-#include "HashTable.h"
-#include "Palavras.h"
 
 typedef struct Documentos *p_Documentos;
 
@@ -18,11 +16,15 @@ void documentos_imprime(p_Documentos);
 
 void documentos_retorna_classe(p_Documentos,char**);
 
-p_Documentos documentos_preenche_tfidf(p_HashTable,p_Documentos);
+int documentos_requisita_idf(p_Documentos,char***);
+
+p_Documentos documentos_preenche_TFIDF(p_Documentos, double*);
 
 p_Documentos documentos_preenche_centroide(p_Documentos,p_Documentos);
 
 p_Documentos documentos_calcula_media_centroide(p_Documentos);
+
+double documentos_calcula_cosseno(p_Documentos,p_Documentos);
 
 void documentos_escrever_arquivo_bin(FILE*,p_Documentos*,int);
 

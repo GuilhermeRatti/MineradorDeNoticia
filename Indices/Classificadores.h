@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include "Documentos.h"
 
-typedef void (*Classificador)(p_Documentos *ListaDeDocumentos, p_Documentos Documento_a_classificar);
+typedef void(*Classificador)(p_Documentos *ListaDeDocumentos, int qtd, p_Documentos Documento_a_classificar);
 
 typedef enum
 {

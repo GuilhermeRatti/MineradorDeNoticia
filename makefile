@@ -7,10 +7,10 @@ override CFLAGS += -ggdb3 -lm -Wall
 
 libIndices.a: $(CODIGOS) $(HEADERS)
 	gcc -c Indices/Documentos.c -o Indices/Documentos.o $(CFLAGS)
+	gcc -c Indices/Classificadores.c -o Indices/Classificadores.o $(CFLAGS)
 	gcc -c Indices/Palavras.c -o Indices/Palavras.o $(CFLAGS)
 	gcc -c Indices/HashTable.c -o Indices/HashTable.o $(CFLAGS)
 	gcc -c Indices/FileManager.c -o Indices/FileManager.o $(CFLAGS)
-	gcc -c Indices/Classificadores.c -o Indices/Classificadores.o $(CFLAGS)
 	ar -crs libIndices.a Indices/Documentos.o Indices/Palavras.o Indices/FileManager.o Indices/HashTable.o Indices/Classificadores.o
 
 builder: libIndices.a ConstrutorIndices.c
