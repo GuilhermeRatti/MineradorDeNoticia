@@ -2,6 +2,12 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+typedef enum
+{
+    SOMAR_FREQUENCIA=1,
+    NAO_SOMAR_FREQUENCIA = 2,
+}FLAG_FREQUENCIA;
+
 typedef struct Palavras *p_Palavras;
 
 p_Palavras palavras_cria(char*,int);
@@ -22,17 +28,15 @@ int palavras_verifica_existencia(p_Palavras* vet,int qtd, char *palavra_alvo);
 
 int palavras_get_indice(p_Palavras*,char*,int);
 
-p_Palavras palavras_registra_frequencia(p_Palavras,int);
+void palavras_registra_frequencia(p_Palavras,int);
 
 void palavras_registra_indice(p_Palavras,int);
 
 void palavras_imprime_informacoes(p_Palavras);
 
-p_Palavras palavras_preenche_IDF(p_Palavras, int);
+void palavras_preenche_IDF(p_Palavras, int);
 
-double palavras_busca_e_preenche_TFIDF(p_Palavras*, int);
-
-double palavras_preenche_e_retorna_TFIDF(p_Palavras *p, int doc);
+double palavras_busca_e_preenche_TFIDF(p_Palavras, int);
 
 void palavras_escrever_arquivo_bin(FILE *arq, p_Palavras *vet_pal, int qtdPal);
 

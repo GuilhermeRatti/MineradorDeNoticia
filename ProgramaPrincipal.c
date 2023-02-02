@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "FileManager.h"
+#include "Classificadores.h"
 #include "HashTable.h"
 #include <string.h>
 #include <ctype.h>
@@ -33,7 +34,7 @@ int main(int argc, char const *argv[])
 
     p_HashTable table = hash_initialize_table();
     
-    table = hash_le_arquivo_bin(table, argv[1]);
+    hash_le_arquivo_bin(table, argv[1]);
 
     //**Parte do menu:
 
@@ -118,6 +119,8 @@ void executa_classificar_noticias(p_HashTable table, int *qtd_novos_docs)
     char char_atual = ' ';
     char *texto = calloc(texto_alc+1, sizeof(char));
 
+    int qtd_docs_treino = hash_retorna_qtd_doc(table);
+
     printf("\n=> Classificar noticias:\n\n\tDigite o texto para classificar: ");
     
     scanf("\n%c", &char_atual);
@@ -137,18 +140,32 @@ void executa_classificar_noticias(p_HashTable table, int *qtd_novos_docs)
 
     texto[texto_tam] = '\0';
 
-    int opt;
+    int opt,k_vizinhos=0;
     printf("\n\n\tDigite 1 ou 2 para escolher entre um classificador KNN ou Centroide mais proximo, respectivamente: ");
     scanf("%d",&opt);
 
     char nome[50],classe[4];
 
     sprintf(nome,"Teste%d.txt",(*qtd_novos_docs+1));
-    (*qtd_novos_docs)++;
     sprintf(classe,"tbd");
-    table = hash_register_new_doc(table, classe, nome);
-    hash_classificar_noticias(table,texto,*qtd_novos_docs,opt);
-    
+    p_Documentos doc = documentos_cria(classe,nome,qtd_docs_treino+(*qtd_novos_docs));
+    hash_registra_noticia_do_terminal(table,doc,texto);
+    hash_calcula_TFIDF_do_doc(table,doc,qtd_docs_treino+(*qtd_novos_docs),TESTE);
+
+    if(opt==K_NEAREST_NEIGHBOURS)
+    {
+        printf("\tDigite a quantidade de K vizinhos a ser analisada: ");
+        scanf("%d",&k_vizinhos);
+    }
+
+    char* classe_predita = hash_classifica_nova_noticia(table,hash_retorna_qtd_doc(table)-1,*qtd_novos_docs,opt,k_vizinhos);
+
+    printf("\n\t####################################\n");
+    printf("\t####### CLASSE PREDITA: %s ########\n",classe_predita);
+    printf("\t####################################\n");
+
+    (*qtd_novos_docs)++;
+
     free(texto);
 }
 

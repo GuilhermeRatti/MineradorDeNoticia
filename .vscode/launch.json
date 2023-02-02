@@ -5,8 +5,9 @@
             "type": "cppdbg",
             "request": "launch",
             "cwd": ".",
-            "program": "${workspaceRoot}/principal",
+            "program": "${workspaceRoot}/construtor",
             "args": [
+                "data/tiny/train.txt",
                 "out.bin"
             ],
             "preLaunchTask": "compilacao"

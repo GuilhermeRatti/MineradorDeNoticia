@@ -28,7 +28,7 @@ int compara_indices_doc(const void *a, const void *b)
     return strcmp(idx1.palavra,idx2.palavra);
 }
 
-int compara_documentos(const void *a, const void *b)
+int compara_classe_documentos(const void *a, const void *b)
 {
     p_Documentos doc1 = *((p_Documentos*)a), doc2 = *((p_Documentos*)b);
     return strcmp(doc1->classe,doc2->classe);
@@ -36,7 +36,7 @@ int compara_documentos(const void *a, const void *b)
 
 void documentos_organiza_ordem(p_Documentos *vet, int qtd)
 {
-    qsort(vet,qtd,sizeof(p_Documentos),compara_documentos);
+    qsort(vet,qtd,sizeof(p_Documentos),compara_classe_documentos);
 }
 
 int documentos_verifica_registrado(char* palavra, double tfidf, int qtd, IndiceDocumentos* vet)
@@ -69,8 +69,7 @@ p_Documentos documentos_cria(char*classe,char*diretorio, int idx)
     doc->tam_allcd=1;
     doc->vet = (IndiceDocumentos*)calloc(doc->tam_allcd,sizeof(IndiceDocumentos));
 
-    doc->classe = (char*)calloc(strlen(classe)+1,sizeof(char));
-    strcpy(doc->classe,classe);
+    doc->classe = strdup(classe);
 
     // Pequeno while para extrair somente o nome do arquivo do diretorio do arquivo
     int i=0;
@@ -87,9 +86,7 @@ p_Documentos documentos_cria(char*classe,char*diretorio, int idx)
         
         i++;
     }
-
-    doc->nome_doc = (char*)calloc(strlen(&diretorio[strlen(diretorio)-i+1])+1,sizeof(char));
-    strcpy(doc->nome_doc,&diretorio[strlen(diretorio)-i+1]);
+    doc->nome_doc = strdup(&diretorio[strlen(diretorio)-i+1]);
 
     return doc;
 }
@@ -120,11 +117,11 @@ void documentos_imprime(p_Documentos doc)
     // }
 }
 
-p_Documentos documentos_registra_frequencia(p_Documentos doc, char *palavra)
+void documentos_registra_frequencia(p_Documentos doc, char *palavra)
 {
     int ja_registrada = documentos_verifica_registrado(palavra,0,doc->tam_vet,doc->vet);
     if(ja_registrada)
-        return doc;
+        return;
 
     if(doc->tam_vet==doc->tam_allcd)
     {
@@ -138,8 +135,6 @@ p_Documentos documentos_registra_frequencia(p_Documentos doc, char *palavra)
     doc->vet[doc->tam_vet].Frequencia = 1;
     doc->tam_vet++;
     documentos_organiza_indices(doc->tam_vet,doc->vet);
-
-    return doc;
 }
 
 int documentos_requisita_TFIDF(p_Documentos doc,char***palavras_out){
@@ -155,23 +150,21 @@ int documentos_requisita_TFIDF(p_Documentos doc,char***palavras_out){
     return doc->tam_vet;
 }
 
-p_Documentos documentos_preenche_TFIDF(p_Documentos doc, double* tfidfs)
+void documentos_preenche_TFIDF(p_Documentos doc, double* tfidfs)
 {
     int i;
     for(i=0;i<doc->tam_vet;i++)
     {
         doc->vet[i].TFIDF = tfidfs[i];
     }
-
-    return doc;
 }
 
-p_Documentos documentos_preenche_centroide(p_Documentos doc, p_Documentos centroide)
+void documentos_preenche_centroide(p_Documentos centroide,char**palavras,double*tfidfs,int qtd)
 {
     int i,ja_registrado;
-    for(i=0;i<doc->tam_vet;i++)
+    for(i=0;i<qtd;i++)
     {
-        ja_registrado = documentos_verifica_registrado(doc->vet[i].palavra, doc->vet[i].TFIDF, centroide->tam_vet, centroide->vet);
+        ja_registrado = documentos_verifica_registrado(palavras[i], tfidfs[i], centroide->tam_vet, centroide->vet);
         if(ja_registrado)
             continue;
 
@@ -182,14 +175,11 @@ p_Documentos documentos_preenche_centroide(p_Documentos doc, p_Documentos centro
         }
 
         centroide->vet[centroide->tam_vet].Frequencia = 1;
-        centroide->vet[centroide->tam_vet].palavra = (char*)calloc(strlen(doc->vet[i].palavra)+1,sizeof(char));
-        strcat(centroide->vet[centroide->tam_vet].palavra,doc->vet[i].palavra);
-        centroide->vet[centroide->tam_vet].TFIDF = doc->vet[i].TFIDF;
+        centroide->vet[centroide->tam_vet].palavra = strdup(palavras[i]);
+        centroide->vet[centroide->tam_vet].TFIDF = tfidfs[i];
         centroide->tam_vet++;
         documentos_organiza_indices(centroide->tam_vet,centroide->vet);
     }
-
-    return centroide;
 }
 
 double documentos_calcula_cosseno(p_Documentos doc1, p_Documentos doc2)
@@ -209,18 +199,21 @@ double documentos_calcula_cosseno(p_Documentos doc1, p_Documentos doc2)
         }
     }
 
+    if(lower_part_doc1==0 || lower_part_doc2 ==0)
+    {
+        return 0;
+    }
+
     return upper_part/(sqrt(lower_part_doc1)* sqrt(lower_part_doc2));
 }
 
-p_Documentos documentos_calcula_media_centroide(p_Documentos centroide)
+void documentos_calcula_media_centroide(p_Documentos centroide)
 {
     int i;
     for(i=0;i<centroide->tam_vet;i++)
     {
         centroide->vet[i].TFIDF/=centroide->vet[i].Frequencia;
     }
-
-    return centroide;
 }
 
 /*Ordem de escritura:

@@ -3,8 +3,13 @@
 #include <stdlib.h>
 #include "Classificadores.h"
 
-typedef struct HashTable *p_HashTable;
+typedef enum
+{
+    TRAIN = 1,
+    TESTE = 2,
+}TIPO_LEITURA;
 
+typedef struct HashTable *p_HashTable;
 
 int hash_palavra_verfica_existencia(p_HashTable table, char *palavra_alvo);
 
@@ -14,9 +19,9 @@ int hash_get_index(char*);
 
 int hash_retorna_qtd_doc(p_HashTable);
 
-p_HashTable hash_register_new_doc(p_HashTable,char*,char*);
+void hash_register_new_doc(p_HashTable,p_Documentos);
 
-p_HashTable hash_register_new_item(p_HashTable,char*, int);
+void hash_register_new_item(p_HashTable,p_Documentos,char*, int);
 
 void hash_print_amount_of_items(p_HashTable);
 
@@ -24,21 +29,27 @@ void hash_imprime_palavra(p_HashTable,char*);
 
 void hash_imprime_documento(p_HashTable,int);
 
-p_HashTable hash_calcula_IDF(p_HashTable);
+void hash_calcula_IDF(p_HashTable);
 
-p_HashTable hash_calcula_TFIDF(p_HashTable,int);
+void hash_calcula_TFIDF_em_massa(p_HashTable,int);
 
-p_HashTable hash_preenche_tfidf_docs(p_HashTable);
+void hash_calcula_TFIDF_do_doc(p_HashTable,p_Documentos, int,TIPO_LEITURA);
 
-p_HashTable hash_calcula_centroides(p_HashTable);
+void hash_preenche_tfidf_docs(p_HashTable);
+
+void hash_calcula_centroides(p_HashTable);
 
 void hash_escrever_arquivo_bin(p_HashTable, const char *);
 
-p_HashTable hash_le_arquivo_bin(p_HashTable, const char *);
+void hash_le_arquivo_bin(p_HashTable, const char *);
 
 void hash_buscar_noticias(p_HashTable, char *);
 
-void hash_classificar_noticias(p_HashTable, char *, int, TIPOS_DISPONIVEIS);
+char *hash_classifica_nova_noticia(p_HashTable table, int posicao, int qtd_novos_textos_digitados, TIPOS_DISPONIVEIS opcao, int k_vizinhos);
+
+void hash_registra_noticia_do_terminal(p_HashTable, p_Documentos, char*);
+
+char* hash_classificar_noticias(p_HashTable, p_Documentos, int, TIPOS_DISPONIVEIS, int);
 
 void hash_relatorio_noticias(p_HashTable, char *);
 

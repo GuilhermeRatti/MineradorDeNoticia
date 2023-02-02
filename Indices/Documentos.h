@@ -6,7 +6,7 @@ typedef struct Documentos *p_Documentos;
 
 p_Documentos documentos_cria(char*,char*,int);
 
-int compara_documentos(const void *, const void *);
+int compara_classe_documentos(const void *, const void *);
 
 void documentos_organiza_ordem(p_Documentos *, int);
 
@@ -22,11 +22,11 @@ int documentos_retorna_quantidade_palavras(p_Documentos doc);
 
 int documentos_requisita_TFIDF(p_Documentos,char***);
 
-p_Documentos documentos_preenche_TFIDF(p_Documentos, double*);
+void documentos_preenche_TFIDF(p_Documentos, double*);
 
-p_Documentos documentos_preenche_centroide(p_Documentos,p_Documentos);
+void documentos_preenche_centroide(p_Documentos,char**,double*,int);
 
-p_Documentos documentos_calcula_media_centroide(p_Documentos);
+void documentos_calcula_media_centroide(p_Documentos);
 
 double documentos_calcula_cosseno(p_Documentos,p_Documentos);
 
@@ -34,4 +34,4 @@ void documentos_escrever_arquivo_bin(FILE*,p_Documentos*,int);
 
 void documentos_le_arquivo_bin(FILE*,p_Documentos*,int);
 
-p_Documentos documentos_registra_frequencia(p_Documentos,char*);
+void documentos_registra_frequencia(p_Documentos,char*);

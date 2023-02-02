@@ -62,7 +62,7 @@ int main(int argc, char const *argv[])
     caminho_relativo[strlen(caminho_relativo) - i + 1]='\0';
 
     p_HashTable table = hash_initialize_table();
-    table = manager_read_txt(arqEntrada, caminho_relativo, table, TRAIN);
+    manager_read_txt(arqEntrada, caminho_relativo, table, TRAIN);
 
     free(caminho_relativo);
     fclose(arqEntrada);

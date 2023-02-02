@@ -88,7 +88,7 @@ int hash_retorna_qtd_doc(p_HashTable table)
     return table->qtd_doc;
 }
 
-p_HashTable hash_register_new_doc(p_HashTable table, char *classe, char *diretorio)
+void hash_register_new_doc(p_HashTable table, p_Documentos doc)
 {
     if (table->qtd_doc == table->doc_allcd)
     {
@@ -96,41 +96,60 @@ p_HashTable hash_register_new_doc(p_HashTable table, char *classe, char *diretor
         table->doc_table = (p_Documentos *)realloc(table->doc_table, table->doc_allcd * sizeof(p_Documentos));
     }
 
-    table->doc_table[table->qtd_doc] = documentos_cria(classe, diretorio, table->qtd_doc);
-    table->qtd_doc++;
+    table->doc_table[table->qtd_doc] = doc;
 
-    return table;
+    p_Documentos *item = (p_Documentos*)bsearch(&(doc),table->class_table,table->qtd_class,sizeof(p_Documentos),compara_classe_documentos);
+
+    if (item == NULL)
+    {
+        if (table->qtd_class == table->class_allcd)
+        {
+            table->class_allcd *= 2;
+            table->class_table = (p_Documentos *)realloc(table->class_table, table->class_allcd * sizeof(p_Documentos));
+        }
+
+        char *class_name = documentos_retorna_classe(doc);
+        table->class_table[table->qtd_class] = documentos_cria(class_name, class_name, table->qtd_class);
+        table->qtd_class++;
+        printf("QTD CLASSE: %d\n",table->qtd_class);
+        documentos_organiza_ordem(table->class_table, table->qtd_class);
+    }
+
+    table->qtd_doc++;
 }
 
-p_HashTable hash_register_new_item(p_HashTable table, char *palavra, int p_index)
+void hash_register_new_item(p_HashTable table, p_Documentos doc, char *palavra, int p_index)
 {
     p_Palavras p = palavras_cria(palavra, p_index);
+    int pos_no_indice = table->pal_table[p_index].qtd_palavras_no_indice;
+    documentos_registra_frequencia(doc, palavra);
 
-    int doc = table->qtd_doc - 1;
-    int i, pos_no_indice = table->pal_table[p_index].qtd_palavras_no_indice;
-    table->doc_table[doc] = documentos_registra_frequencia(table->doc_table[doc], palavra);
+    p_Palavras *pal_item = (p_Palavras*)bsearch(&p,
+                                                table->pal_table[p_index].vet_indice,
+                                                table->pal_table[p_index].qtd_palavras_no_indice,
+                                                sizeof(p_Palavras),
+                                                compara_palavras);
 
-    for (i = 0; i < pos_no_indice; i++)
+    if(pal_item!=NULL)
     {
-        int match = compara_palavras(&(table->pal_table[p_index].vet_indice[i]), &p);
-
-        if (!match)
-        {
-            table->pal_table[p_index].vet_indice[i] = palavras_registra_frequencia(table->pal_table[p_index].vet_indice[i], doc);
-            palavras_free(p);
-
-            return table;
-        }
+        palavras_registra_frequencia((*pal_item),documentos_retorna_id(doc));
+        palavras_free(p);
+        return;
     }
 
     table->qtd_pal++;
     table->pal_table[p_index].qtd_palavras_no_indice++;
-    table->pal_table[p_index].vet_indice = (p_Palavras *)realloc(table->pal_table[p_index].vet_indice,
+    if(table->pal_table[p_index].qtd_palavras_no_indice==1)
+        table->pal_table[p_index].vet_indice = (p_Palavras *)calloc(1,sizeof(p_Palavras));
+    
+    else
+        table->pal_table[p_index].vet_indice = (p_Palavras *)realloc(table->pal_table[p_index].vet_indice,
                                                                  table->pal_table[p_index].qtd_palavras_no_indice * sizeof(p_Palavras));
-    p = palavras_registra_frequencia(p, doc);
+    
+    
+    palavras_registra_frequencia(p, documentos_retorna_id(doc));
     table->pal_table[p_index].vet_indice[pos_no_indice] = p;
-
-    return table;
+    palavras_organiza_ordem(table->pal_table[p_index].vet_indice,table->pal_table[p_index].qtd_palavras_no_indice);
 }
 
 void hash_print_amount_of_items(p_HashTable table)
@@ -170,88 +189,81 @@ void hash_imprime_documento(p_HashTable table, int posicao)
     documentos_imprime(table->class_table[posicao]);
 }
 
-p_HashTable hash_calcula_IDF(p_HashTable table)
+void hash_calcula_IDF(p_HashTable table)
 {
     int i,j;
     for(i=0;i<SIZE_OF_TABLE;i++)
     {
         for(j=0;j<table->pal_table[i].qtd_palavras_no_indice;j++)
         {
-            table->pal_table[i].vet_indice[j] = palavras_preenche_IDF(table->pal_table[i].vet_indice[j],table->qtd_doc);
+            palavras_preenche_IDF(table->pal_table[i].vet_indice[j],table->qtd_doc);
         }
     }
-    return table;
 }
 
-p_HashTable hash_calcula_TFIDF(p_HashTable table,int beginning)
+void hash_calcula_TFIDF_em_massa(p_HashTable table,int beginning)
 {
-    int i,j,k,hash,match=1;
+    int i;
     for(i=beginning;i<table->qtd_doc;i++)
     {
-        char **palavras;
-        int qtd;
-        qtd = documentos_requisita_TFIDF(table->doc_table[i],&palavras);
-        double tfidf[qtd];
-
-        for(j=0;j<qtd;j++)
-        {
-            hash = hash_get_index(palavras[j]);
-            p_Palavras p = palavras_cria(palavras[j],hash);
-
-            for(k=0;k<table->pal_table[hash].qtd_palavras_no_indice;k++)
-            {
-                match = compara_palavras(&p,&(table->pal_table[hash].vet_indice[k]));
-                if(!match)
-                    break;
-            }
-            palavras_free(p);
-
-            tfidf[j] = palavras_busca_e_preenche_TFIDF(&(table->pal_table[hash].vet_indice[k]),i);
-        }
-        free(palavras);
-        table->doc_table[i] = documentos_preenche_TFIDF(table->doc_table[i],tfidf);
+        hash_calcula_TFIDF_do_doc(table,table->doc_table[i], i, TRAIN);
     }
-
-    return table;
 }
 
-p_HashTable hash_calcula_centroides(p_HashTable table)
+void hash_calcula_TFIDF_do_doc(p_HashTable table, p_Documentos doc, int posicao, TIPO_LEITURA opt)
 {
-    int i, k, match = 1;
+    int j,k,hash,match=1;
+    char **palavras;
+    int qtd;
+    qtd = documentos_requisita_TFIDF(doc,&palavras);
+    double tfidf[qtd];
 
-    for (i = 0; i < table->qtd_doc; i++)
+    for(j=0;j<qtd;j++)
     {
-        for (k = 0; k < table->qtd_class; k++)
+        hash = hash_get_index(palavras[j]);
+        p_Palavras p = palavras_cria(palavras[j],hash);
+
+        for(k=0;k<table->pal_table[hash].qtd_palavras_no_indice;k++)
         {
-            match = compara_documentos(&(table->class_table[k]), &(table->doc_table[i]));
-            if (!match)
+            match = compara_palavras(&p,&(table->pal_table[hash].vet_indice[k]));
+            if(!match)
                 break;
         }
+        palavras_free(p);
 
-        if (match != 0)
+        tfidf[j] = palavras_busca_e_preenche_TFIDF(table->pal_table[hash].vet_indice[k],posicao);
+    }
+
+    if(opt==TRAIN)
+    {
+        p_Documentos *doc_item = (p_Documentos*)bsearch(&doc,
+                                                        table->class_table,
+                                                        table->qtd_class,
+                                                        sizeof(p_Documentos),
+                                                        compara_classe_documentos);
+        
+        if(doc_item==NULL)
         {
-            if (table->qtd_class == table->class_allcd)
-            {
-                table->class_allcd *= 2;
-                table->class_table = (p_Documentos *)realloc(table->class_table, table->class_allcd * sizeof(p_Documentos));
-            }
-
-            char *class_name = documentos_retorna_classe(table->doc_table[i]);
-            table->class_table[k] = documentos_cria(class_name, class_name, k);
-            table->qtd_class++;
+            hash_free(table);
+            exit(printf("ALGO DE MUITO ERRADO ACONTECEU, NAO ENCONTREI UM CENTROIDE DE CLASSE QUE ERA PRA ESTAR REGISTRADO\n"));
         }
 
-        table->class_table[k] = documentos_preenche_centroide(table->doc_table[i], table->class_table[k]);
-        documentos_organiza_ordem(table->class_table, table->qtd_class);
+        documentos_preenche_centroide((*doc_item),palavras,tfidf,qtd);
     }
+    free(palavras);
+
+    documentos_preenche_TFIDF(doc,tfidf);
+}
+
+void hash_calcula_centroides(p_HashTable table)
+{
+    int i;
 
     for (i = 0; i < table->qtd_class; i++)
     {
-        table->class_table[i] = documentos_calcula_media_centroide(table->class_table[i]);
+        documentos_calcula_media_centroide(table->class_table[i]);
         documentos_imprime(table->class_table[i]);
     }
-
-    return table;
 }
 
 /*Ordem de escrita:
@@ -316,7 +328,7 @@ void hash_escrever_arquivo_bin(p_HashTable table, const char *caminho_bin)
 
     documentos_escrever_arquivo_bin(arq, table->doc_table, table->qtd_doc);
 
-    fwrite(&(table->qtd_doc), 1, sizeof(int), arq); // qtd de classes - int
+    fwrite(&(table->qtd_class), 1, sizeof(int), arq); // qtd de classes - int
 
     documentos_escrever_arquivo_bin(arq, table->class_table, table->qtd_class);
 
@@ -359,7 +371,7 @@ void hash_escrever_arquivo_bin(p_HashTable table, const char *caminho_bin)
                     TFIDF                       - double
         }
 */
-p_HashTable hash_le_arquivo_bin(p_HashTable table, const char *caminho_bin)
+void hash_le_arquivo_bin(p_HashTable table, const char *caminho_bin)
 {
 
     int i = 0, qtd_pal_local = 0;
@@ -400,13 +412,10 @@ p_HashTable hash_le_arquivo_bin(p_HashTable table, const char *caminho_bin)
 
     documentos_le_arquivo_bin(arq, table->class_table, table->qtd_class);
 
-    table->pal_allcd = table->qtd_pal;
     table->doc_allcd = table->qtd_doc;
     table->class_allcd = table->qtd_class;
 
     fclose(arq);
-
-    return table;
 }
 
 int hash_palavra_verfica_existencia(p_HashTable table, char *palavra_alvo)
@@ -495,13 +504,16 @@ void hash_buscar_noticias(p_HashTable table, char *texto)
     organizador_free(vet_org_pal, qtd_org_pal);
 }
 
+char *hash_classifica_nova_noticia(p_HashTable table, int posicao, int qtd_novos_textos_digitados, TIPOS_DISPONIVEIS opcao, int k_vizinhos)
+{
+    return hash_classificar_noticias(table,table->doc_table[posicao],qtd_novos_textos_digitados,opcao,k_vizinhos);
+}
 
-void hash_classificar_noticias(p_HashTable table, char *texto, int qtd_novos_textos_digitados, TIPOS_DISPONIVEIS opcao)
+void hash_registra_noticia_do_terminal(p_HashTable table, p_Documentos doc, char*texto)
 {
     int indice_pal_hash;
     
     char *palavra_atual;
-
 
     palavra_atual = strtok(texto, " ");
 
@@ -511,12 +523,14 @@ void hash_classificar_noticias(p_HashTable table, char *texto, int qtd_novos_tex
         // verifica se a plavra existe na hash
         // verifica se a palavra ja foi adicionada
 
-        table = hash_register_new_item(table,palavra_atual,indice_pal_hash);
+        hash_register_new_item(table,doc,palavra_atual,indice_pal_hash);
 
         palavra_atual = strtok(NULL, " ");
     }
+}
 
-    table = hash_calcula_TFIDF(table,table->qtd_doc-1); //calcula o tfidf do ultimo documento adicionado
+char* hash_classificar_noticias(p_HashTable table, p_Documentos doc, int qtd_novos_textos_digitados, TIPOS_DISPONIVEIS opcao, int k_vizinhos)
+{
 
     Classificador modelo = classificadores_retorna_tipo(opcao);
     p_Documentos *dataset;
@@ -524,6 +538,7 @@ void hash_classificar_noticias(p_HashTable table, char *texto, int qtd_novos_tex
 
     if(opcao==K_NEAREST_NEIGHBOURS)
     {
+        
         dataset = table->doc_table;
         qtd_dados = table->qtd_doc - qtd_novos_textos_digitados; //pegar somente os textos que vieram da base de treino
     }
@@ -533,7 +548,7 @@ void hash_classificar_noticias(p_HashTable table, char *texto, int qtd_novos_tex
         qtd_dados = table->qtd_class;
     }
 
-    modelo(dataset,qtd_dados,table->doc_table[table->qtd_doc-1]);
+    return modelo(dataset,qtd_dados,doc,k_vizinhos);
 }
 
 /*
@@ -632,7 +647,7 @@ char * classe_retorna_string_unica(p_HashTable table, p_Documentos doc)
     int i;
     for (i = 0; i < table->qtd_class; i++)
     {
-        if (compara_documentos(&(table->class_table[i]), &(doc)) == 0)
+        if (compara_classe_documentos(&(table->class_table[i]), &(doc)) == 0)
         {
             return documentos_retorna_classe(table->class_table[i]);
         }
