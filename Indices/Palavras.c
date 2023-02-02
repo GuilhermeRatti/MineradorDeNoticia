@@ -124,7 +124,7 @@ int palavras_get_indice(p_Palavras* vet, char* palavra, int qtd)
     return (*item)->idx;
 }
 
-p_Palavras palavras_registra_frequencia(p_Palavras p, int doc)
+void palavras_registra_frequencia(p_Palavras p, int doc)
 {
     IndicePalavras holder;
     holder.IdxDocumento = doc;
@@ -135,20 +135,18 @@ p_Palavras palavras_registra_frequencia(p_Palavras p, int doc)
     {
         item->Frequencia++;
 
-        return p;
+        return;
     }
 
     if(p->tam_vet==p->tam_allcd)
     {
         p->tam_allcd*=2;
-        p->vet =  (IndicePalavras*)realloc(p->vet,p->tam_allcd*sizeof(IndicePalavras));
+        p->vet = (IndicePalavras*)realloc(p->vet,p->tam_allcd*sizeof(IndicePalavras));
     }
 
     p->vet[p->tam_vet].IdxDocumento = doc;
     p->vet[p->tam_vet].Frequencia = 1;
     p->tam_vet++;
-
-    return p;
 }
 
 void palavras_registra_indice(p_Palavras pal, int idx)
@@ -183,33 +181,24 @@ double calcula_idf(int n, int df){
     return res;
 }
 
-p_Palavras palavras_preenche_IDF(p_Palavras p, int qtdDoc)
+void palavras_preenche_IDF(p_Palavras p, int qtdDoc)
 {   
     p->idf = calcula_idf(qtdDoc,p->tam_vet);
-
-    return p;
 }
 
-double palavras_busca_e_preenche_TFIDF(p_Palavras *p, int doc)
+double palavras_busca_e_preenche_TFIDF(p_Palavras p, int doc)
 {
     IndicePalavras holder;
     holder.IdxDocumento = doc;
 
-    IndicePalavras* item = (IndicePalavras*)bsearch(&holder,(*p)->vet,(*p)->tam_vet,sizeof(IndicePalavras),compara_indices_pal);
+    IndicePalavras* item = (IndicePalavras*)bsearch(&holder,p->vet,p->tam_vet,sizeof(IndicePalavras),compara_indices_pal);
     
-    (*item).TFIDF = (*p)->idf*(*item).Frequencia;
+    if(item==NULL)
+    {
+        exit(printf("AAAAAAAAAAA\n"));
+    }
 
-    return (*item).TFIDF;
-}
-
-double palavras_preenche_e_retorna_TFIDF(p_Palavras *p, int doc)
-{
-    IndicePalavras holder;
-    holder.IdxDocumento = doc;
-
-    IndicePalavras* item = (IndicePalavras*)bsearch(&holder,(*p)->vet,(*p)->tam_vet,sizeof(IndicePalavras),compara_indices_pal);
-    
-    (*item).TFIDF = (*p)->idf*(*item).Frequencia;
+    (*item).TFIDF = p->idf*(*item).Frequencia;
 
     return (*item).TFIDF;
 }
@@ -298,6 +287,7 @@ void palavras_le_arquivo_bin(FILE *arq, p_Palavras *vet_pal, int qtdPal)
             
             fread(&(vet_pal[i]->vet[j].TFIDF), 1, sizeof(double), arq);//TFIDF double
         }
+        printf("%s\n",vet_pal[i]->palavra);
     }
 }
 
