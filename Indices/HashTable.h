@@ -1,6 +1,7 @@
 #pragma once
 #include <stdio.h>
 #include <stdlib.h>
+#include "Classificadores.h"
 
 typedef struct HashTable *p_HashTable;
 
@@ -31,14 +32,16 @@ p_HashTable hash_preenche_tfidf_docs(p_HashTable);
 
 p_HashTable hash_calcula_centroides(p_HashTable);
 
-void hash_escrever_arquivo_bin(p_HashTable, const char *arq);
+void hash_escrever_arquivo_bin(p_HashTable, const char *);
 
-void hash_le_arquivo_bin(p_HashTable, const char *arq);
+p_HashTable hash_le_arquivo_bin(p_HashTable, const char *);
 
-void hash_buscar_noticias(p_HashTable table, char *texto);
+void hash_buscar_noticias(p_HashTable, char *);
 
-void hash_relatorio_noticias(p_HashTable table, char *palavra_relatorio);
+void hash_classificar_noticias(p_HashTable, char *, int, TIPOS_DISPONIVEIS);
 
-void hash_relatorio_documentos(p_HashTable table);
+void hash_relatorio_noticias(p_HashTable, char *);
+
+void hash_relatorio_documentos(p_HashTable);
 
 void hash_free(p_HashTable);

@@ -20,7 +20,7 @@ principal: libIndices.a ProgramaPrincipal.c
 	$(CC) -o principal ProgramaPrincipal.c -I Indices -L . -lIndices $(CFLAGS)
 
 run_c:
-	./construtor data/tiny/train.txt out.bin
+	./construtor data/medium-large/train.txt out_medium_large.bin
 
 run_p:
 	./principal out_tiny.bin 10

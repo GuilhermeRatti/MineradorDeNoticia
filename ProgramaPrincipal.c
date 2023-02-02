@@ -10,7 +10,7 @@
 
 void executa_menu(p_HashTable table);
 void executa_buscar_noticias(p_HashTable table);
-void executa_classificar_noticias(p_HashTable table);
+void executa_classificar_noticias(p_HashTable table, int*qtd_novos_textos);
 void executa_relatorio_noticias(p_HashTable table);
 void executa_relatorio_documento(p_HashTable table);
 
@@ -33,7 +33,7 @@ int main(int argc, char const *argv[])
 
     p_HashTable table = hash_initialize_table();
     
-    hash_le_arquivo_bin(table, argv[1]);
+    table = hash_le_arquivo_bin(table, argv[1]);
 
     //**Parte do menu:
 
@@ -51,7 +51,7 @@ int main(int argc, char const *argv[])
 
 void executa_menu(p_HashTable table)
 {
-    
+    int qtd_novos_docs_registrados=0;
     int opcao = -1;
 
     while (opcao)
@@ -65,7 +65,7 @@ void executa_menu(p_HashTable table)
         }
         else if (opcao == 2)
         {
-            executa_classificar_noticias(table);
+            executa_classificar_noticias(table, &qtd_novos_docs_registrados);
         }
         else if (opcao == 3)
         {
@@ -112,9 +112,44 @@ void executa_buscar_noticias(p_HashTable table)
     free(texto);
 }
 
-void executa_classificar_noticias(p_HashTable table)
+void executa_classificar_noticias(p_HashTable table, int *qtd_novos_docs)
 {
+    int texto_alc = 125, texto_tam = 0;
+    char char_atual = ' ';
+    char *texto = calloc(texto_alc+1, sizeof(char));
+
+    printf("\n=> Classificar noticias:\n\n\tDigite o texto para classificar: ");
     
+    scanf("\n%c", &char_atual);
+    while (char_atual != '\n')
+    {
+        if (texto_tam >= texto_alc)
+        {
+            texto_alc *= MULTIPLICADOR_TEXTO;
+            texto = realloc(texto, texto_alc * sizeof(char));
+        }
+        
+        texto[texto_tam] = char_atual;
+        texto_tam++;
+        
+        scanf("%c", &char_atual);
+    }
+
+    texto[texto_tam] = '\0';
+
+    int opt;
+    printf("\n\n\tDigite 1 ou 2 para escolher entre um classificador KNN ou Centroide mais proximo, respectivamente: ");
+    scanf("%d",&opt);
+
+    char nome[50],classe[4];
+
+    sprintf(nome,"Teste%d.txt",(*qtd_novos_docs+1));
+    (*qtd_novos_docs)++;
+    sprintf(classe,"tbd");
+    table = hash_register_new_doc(table, classe, nome);
+    hash_classificar_noticias(table,texto,*qtd_novos_docs,opt);
+    
+    free(texto);
 }
 
 void executa_relatorio_noticias(p_HashTable table)

@@ -112,12 +112,12 @@ int documentos_retorna_quantidade_palavras(p_Documentos doc)
 void documentos_imprime(p_Documentos doc)
 {
     printf("\nNOME: %s\nCLASSE: %s\nN_DOCS: %d\n",doc->nome_doc,doc->classe,doc->tam_vet);
-    int i;
+    //int i;
 
-    for(i=0;i<doc->tam_vet;i++)
-    {
-        printf("Palavra: %s, Freq: %d, TFIDF: %.2f\n",doc->vet[i].palavra,doc->vet[i].Frequencia,doc->vet[i].TFIDF);
-    }
+    // for(i=0;i<doc->tam_vet;i++)
+    // {
+    //     printf("Palavra: %s, Freq: %d, TFIDF: %.2f\n",doc->vet[i].palavra,doc->vet[i].Frequencia,doc->vet[i].TFIDF);
+    // }
 }
 
 p_Documentos documentos_registra_frequencia(p_Documentos doc, char *palavra)

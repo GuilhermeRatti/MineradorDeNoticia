@@ -37,7 +37,7 @@ Classificador classificadores_retorna_tipo(TIPOS_DISPONIVEIS tipo_desejado)
         return NULL;
 }
 
-void k_nearest_neighbours(p_Documentos *vet_doc, int qtd, p_Documentos doc_analisado)
+void k_nearest_neighbours(p_Documentos *dataset, int qtd, p_Documentos doc_analisado)
 {
     Resultados res[qtd];
     
@@ -45,13 +45,18 @@ void k_nearest_neighbours(p_Documentos *vet_doc, int qtd, p_Documentos doc_anali
     for(i=0;i<qtd;i++)
     {
         res[i].posicao_no_vet = i;
-        res[i].cosseno = documentos_calcula_cosseno(vet_doc[i],doc_analisado);
+        res[i].cosseno = documentos_calcula_cosseno(dataset[i],doc_analisado);
     }
 
     qsort(res,qtd,sizeof(Resultados),compara_resultados);
+
+    for(i=0;i<10;i++)
+    {
+        documentos_imprime(dataset[res[i].posicao_no_vet]);
+    }
 }
 
-void centroide_mais_proxima(p_Documentos *vet_doc, int qtd, p_Documentos doc_analisado)
+void centroide_mais_proxima(p_Documentos *dataset, int qtd, p_Documentos doc_analisado)
 {
     printf("Este eh Centroide\n");
 }

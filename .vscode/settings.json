@@ -5,7 +5,8 @@
         "documentos.h": "c",
         "hashtable.h": "c",
         "classificadores.h": "c",
-        "string.h": "c"
+        "string.h": "c",
+        "filemanager.h": "c"
     },
     "C_Cpp.errorSquiggles": "disabled"
 }

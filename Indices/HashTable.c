@@ -1,6 +1,7 @@
 #include "HashTable.h"
 #include "Palavras.h"
 #include "Documentos.h"
+#include "Classificadores.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -211,25 +212,6 @@ p_HashTable hash_calcula_TFIDF(p_HashTable table,int beginning)
         table->doc_table[i] = documentos_preenche_TFIDF(table->doc_table[i],tfidf);
     }
 
-    // int i, j, qtd_tfidf, qtd;
-
-    // for (i = 0; i < table->pal_allcd; i++)
-    // {
-    //     HashIndex id_desejado = table->pal_table[i];
-    //     qtd = id_desejado.qtd_palavras_no_indice;
-    //     for (j = 0; j < qtd; j++)
-    //     {
-    //         double *vet_tfidf = (double *)malloc(sizeof(double));
-    //         int *vet_docs = (int *)malloc(sizeof(int));
-
-    //         id_desejado.vet_indice[j] = palavras_preenche_tfidf(id_desejado.vet_indice[j], table->qtd_doc, &vet_tfidf, &vet_docs, &qtd_tfidf);
-    //         free(vet_docs);
-    //         free(vet_tfidf);
-    //     }
-    // }
-
-    // table = hash_preenche_tfidf_docs(table);
-
     return table;
 }
 
@@ -377,7 +359,7 @@ void hash_escrever_arquivo_bin(p_HashTable table, const char *caminho_bin)
                     TFIDF                       - double
         }
 */
-void hash_le_arquivo_bin(p_HashTable table, const char *caminho_bin)
+p_HashTable hash_le_arquivo_bin(p_HashTable table, const char *caminho_bin)
 {
 
     int i = 0, qtd_pal_local = 0;
@@ -418,7 +400,13 @@ void hash_le_arquivo_bin(p_HashTable table, const char *caminho_bin)
 
     documentos_le_arquivo_bin(arq, table->class_table, table->qtd_class);
 
+    table->pal_allcd = table->qtd_pal;
+    table->doc_allcd = table->qtd_doc;
+    table->class_allcd = table->qtd_class;
+
     fclose(arq);
+
+    return table;
 }
 
 int hash_palavra_verfica_existencia(p_HashTable table, char *palavra_alvo)
@@ -507,6 +495,46 @@ void hash_buscar_noticias(p_HashTable table, char *texto)
     organizador_free(vet_org_pal, qtd_org_pal);
 }
 
+
+void hash_classificar_noticias(p_HashTable table, char *texto, int qtd_novos_textos_digitados, TIPOS_DISPONIVEIS opcao)
+{
+    int indice_pal_hash;
+    
+    char *palavra_atual;
+
+
+    palavra_atual = strtok(texto, " ");
+
+    while (palavra_atual != NULL)
+    {
+        indice_pal_hash = hash_get_index(palavra_atual);
+        // verifica se a plavra existe na hash
+        // verifica se a palavra ja foi adicionada
+
+        table = hash_register_new_item(table,palavra_atual,indice_pal_hash);
+
+        palavra_atual = strtok(NULL, " ");
+    }
+
+    table = hash_calcula_TFIDF(table,table->qtd_doc-1); //calcula o tfidf do ultimo documento adicionado
+
+    Classificador modelo = classificadores_retorna_tipo(opcao);
+    p_Documentos *dataset;
+    int qtd_dados;
+
+    if(opcao==K_NEAREST_NEIGHBOURS)
+    {
+        dataset = table->doc_table;
+        qtd_dados = table->qtd_doc - qtd_novos_textos_digitados; //pegar somente os textos que vieram da base de treino
+    }
+    else
+    {
+        dataset = table->class_table;
+        qtd_dados = table->qtd_class;
+    }
+
+    modelo(dataset,qtd_dados,table->doc_table[table->qtd_doc-1]);
+}
 
 /*
 O usuario deve digitar uma palavra e o programa deve exibir o número total de
