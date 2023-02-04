@@ -838,3 +838,19 @@ void organizador_free(Organizador *vet_org, int tam_vet)
     }
     free(vet_org);
 }
+
+void hash_preenche_tabela_classes(p_HashTable table,char *** tabela_classes)
+{
+    (*tabela_classes) = (char**)realloc((*tabela_classes),table->qtd_class*sizeof(char*));
+    
+    int i;
+    for(i=0;i<table->qtd_class;i++)
+    {
+        (*tabela_classes)[i] = strdup(documentos_retorna_classe(table->class_table[i]));
+    }
+}
+
+int hash_retorna_qtd_classes(p_HashTable table)
+{
+    return table->qtd_class;
+}

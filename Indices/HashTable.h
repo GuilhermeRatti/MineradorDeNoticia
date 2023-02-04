@@ -53,4 +53,8 @@ void hash_relatorio_palavras(p_HashTable, char *);
 
 void hash_relatorio_documentos(p_HashTable);
 
+void hash_preenche_tabela_classes(p_HashTable,char***);
+
+int hash_retorna_qtd_classes(p_HashTable);
+
 void hash_free(p_HashTable);

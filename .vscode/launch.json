@@ -5,9 +5,9 @@
             "type": "cppdbg",
             "request": "launch",
             "cwd": ".",
-            "program": "${workspaceRoot}/principal",
+            "program": "${workspaceRoot}/experimento",
             "args": [
-                "out.bin",
+                "out_medium_large.bin",
                 "10"
             ],
             "preLaunchTask": "compilacao"
