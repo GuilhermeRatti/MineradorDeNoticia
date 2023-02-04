@@ -90,6 +90,7 @@ int hash_retorna_qtd_doc(p_HashTable table)
 
 void hash_register_new_doc(p_HashTable table, p_Documentos doc)
 {
+
     if (table->qtd_doc == table->doc_allcd)
     {
         table->doc_allcd *= 2;
@@ -120,7 +121,9 @@ void hash_register_new_doc(p_HashTable table, p_Documentos doc)
 
 void hash_register_new_item(p_HashTable table, p_Documentos doc, char *palavra, int p_index)
 {
-    p_Palavras p = palavras_cria(palavra, p_index);
+    
+    p_Palavras p = NULL;
+    p = palavras_cria(palavra, p_index);
     int pos_no_indice = table->pal_table[p_index].qtd_palavras_no_indice;
     documentos_registra_frequencia(doc, palavra);
 
@@ -132,6 +135,7 @@ void hash_register_new_item(p_HashTable table, p_Documentos doc, char *palavra, 
 
     if(pal_item!=NULL)
     {
+        
         palavras_registra_frequencia((*pal_item),documentos_retorna_id(doc));
         palavras_free(p);
         return;
@@ -139,7 +143,7 @@ void hash_register_new_item(p_HashTable table, p_Documentos doc, char *palavra, 
 
     table->qtd_pal++;
     table->pal_table[p_index].qtd_palavras_no_indice++;
-    if(table->pal_table[p_index].qtd_palavras_no_indice==1)
+    if(table->pal_table[p_index].qtd_palavras_no_indice<=1)
         table->pal_table[p_index].vet_indice = (p_Palavras *)calloc(1,sizeof(p_Palavras));
     
     else
@@ -153,8 +157,9 @@ void hash_register_new_item(p_HashTable table, p_Documentos doc, char *palavra, 
 }
 
 void hash_print_amount_of_items(p_HashTable table)
-{
-    printf("QTD DE DOC E PALAVRA: %d %d\n", table->qtd_doc, table->qtd_pal);
+{   
+    printf("Quantidade de documentos: %d\n",table->qtd_doc);
+    printf("Quantidade total de palavras diferentes: %d\n", table->qtd_pal);
 }
 
 void hash_imprime_palavra(p_HashTable table, char *palavra)
@@ -212,7 +217,7 @@ void hash_calcula_TFIDF_em_massa(p_HashTable table,int beginning)
 
 void hash_calcula_TFIDF_do_doc(p_HashTable table, p_Documentos doc, int posicao, TIPO_LEITURA opt)
 {
-    int j,k,hash,match=1;
+    int j,hash;
     char **palavras;
     int qtd;
     qtd = documentos_requisita_TFIDF(doc,&palavras);
@@ -223,15 +228,20 @@ void hash_calcula_TFIDF_do_doc(p_HashTable table, p_Documentos doc, int posicao,
         hash = hash_get_index(palavras[j]);
         p_Palavras p = palavras_cria(palavras[j],hash);
 
-        for(k=0;k<table->pal_table[hash].qtd_palavras_no_indice;k++)
+        p_Palavras *item = (p_Palavras*)bsearch(&p,
+                                                table->pal_table[hash].vet_indice,
+                                                table->pal_table[hash].qtd_palavras_no_indice,
+                                                sizeof(p_Palavras),
+                                                compara_palavras);
+        if(item==NULL)
         {
-            match = compara_palavras(&p,&(table->pal_table[hash].vet_indice[k]));
-            if(!match)
-                break;
+            hash_free(table);
+            exit(printf("ALGO DE MUITO ERRADO ACONTECEU, N ACHEI UMA PALAVRA Q ERA PRA JA ESTAR REGISTRADA!!\n"));
         }
+
         palavras_free(p);
 
-        tfidf[j] = palavras_busca_e_preenche_TFIDF(table->pal_table[hash].vet_indice[k],posicao);
+        tfidf[j] = palavras_busca_e_preenche_TFIDF((*item),posicao);
     }
 
     if(opt==TRAIN)
@@ -504,11 +514,6 @@ void hash_buscar_noticias(p_HashTable table, char *texto)
     organizador_free(vet_org_pal, qtd_org_pal);
 }
 
-char *hash_classifica_nova_noticia(p_HashTable table, int posicao, int qtd_novos_textos_digitados, TIPOS_DISPONIVEIS opcao, int k_vizinhos)
-{
-    return hash_classificar_noticias(table,table->doc_table[posicao],qtd_novos_textos_digitados,opcao,k_vizinhos);
-}
-
 void hash_registra_noticia_do_terminal(p_HashTable table, p_Documentos doc, char*texto)
 {
     int indice_pal_hash;
@@ -529,7 +534,7 @@ void hash_registra_noticia_do_terminal(p_HashTable table, p_Documentos doc, char
     }
 }
 
-char* hash_classificar_noticias(p_HashTable table, p_Documentos doc, int qtd_novos_textos_digitados, TIPOS_DISPONIVEIS opcao, int k_vizinhos)
+char* hash_classificar_noticias(p_HashTable table, p_Documentos doc, TIPOS_DISPONIVEIS opcao, int k_vizinhos)
 {
 
     Classificador modelo = classificadores_retorna_tipo(opcao);
@@ -540,7 +545,7 @@ char* hash_classificar_noticias(p_HashTable table, p_Documentos doc, int qtd_nov
     {
         
         dataset = table->doc_table;
-        qtd_dados = table->qtd_doc - qtd_novos_textos_digitados; //pegar somente os textos que vieram da base de treino
+        qtd_dados = table->qtd_doc; //pegar somente os textos que vieram da base de treino
     }
     else
     {
@@ -557,7 +562,7 @@ documentos em que a palavra aparece, os 10 em que ela aparece com mais frequênc
 palavra por classe. Ambas as listas devem ser ordenadas com os itens de maior contagem aparecendo
 primeiro. A ordenação deve ser feita ao selecionar a opção usando a função qsort.
 */
-void hash_relatorio_noticias(p_HashTable table, char *palavra_relatorio)
+void hash_relatorio_palavras(p_HashTable table, char *palavra_relatorio)
 {
     int qtd_org_doc = 0, qtd_org_cls = 0, i = 0;
     p_Palavras palavra_tabela;
@@ -582,11 +587,19 @@ void hash_relatorio_noticias(p_HashTable table, char *palavra_relatorio)
         // adiciona no vetor os dados dos documentos
         for (i = 0; i < qtd_docs_palavra; i++)
         {
-            vet_org_doc = organizador_adiciona(vet_org_doc, &qtd_org_doc, palavra_docs_ids[i], palavras_docs_frequencia[i],  "");
+            if(palavra_docs_ids[i]<table->qtd_doc)
+            {
+                vet_org_doc = organizador_adiciona(vet_org_doc, &qtd_org_doc, palavra_docs_ids[i], palavras_docs_frequencia[i],  "");
+            }
+            else
+            {
+                qtd_docs_palavra--;
+            }
         }
 
         for (i = 0; i < qtd_docs_palavra; i++)
-        {   p_Documentos doc_atual = table->doc_table[vet_org_doc[i].identificador];
+        {   
+            p_Documentos doc_atual = table->doc_table[vet_org_doc[i].identificador];
             vet_org_cls = organizador_adiciona(vet_org_cls, &qtd_org_cls, (long int)classe_retorna_string_unica(table, doc_atual), vet_org_doc[i].fator, "");
         }
         

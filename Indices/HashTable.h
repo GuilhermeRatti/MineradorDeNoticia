@@ -45,13 +45,11 @@ void hash_le_arquivo_bin(p_HashTable, const char *);
 
 void hash_buscar_noticias(p_HashTable, char *);
 
-char *hash_classifica_nova_noticia(p_HashTable table, int posicao, int qtd_novos_textos_digitados, TIPOS_DISPONIVEIS opcao, int k_vizinhos);
-
 void hash_registra_noticia_do_terminal(p_HashTable, p_Documentos, char*);
 
-char* hash_classificar_noticias(p_HashTable, p_Documentos, int, TIPOS_DISPONIVEIS, int);
+char* hash_classificar_noticias(p_HashTable, p_Documentos, TIPOS_DISPONIVEIS, int);
 
-void hash_relatorio_noticias(p_HashTable, char *);
+void hash_relatorio_palavras(p_HashTable, char *);
 
 void hash_relatorio_documentos(p_HashTable);
 

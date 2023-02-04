@@ -61,7 +61,7 @@ char* k_nearest_neighbours(p_Documentos *dataset, int qtd, p_Documentos doc_anal
     int qtd_classes_contabilizadas=0,ja_foi=0;
     char *classes_ja_contabilizadas[k_vizinhos];
     calcula_resultados(dataset,res,qtd,doc_analisado);
-
+    
     int i,j;
     for(i=0;i<k_vizinhos;i++)
     {
@@ -72,7 +72,7 @@ char* k_nearest_neighbours(p_Documentos *dataset, int qtd, p_Documentos doc_anal
         {
             if(!strcmp(classes_ja_contabilizadas[j],res[i].classe))
             {
-                resultado_knn[j].cosseno++;
+                resultado_knn[j].cosseno++; 
                 ja_foi=1;
                 break;
             }
@@ -87,7 +87,7 @@ char* k_nearest_neighbours(p_Documentos *dataset, int qtd, p_Documentos doc_anal
         }
     }
 
-    qsort(res,qtd_classes_contabilizadas,sizeof(Resultados),compara_resultados);
+    qsort(resultado_knn,qtd_classes_contabilizadas,sizeof(Resultados),compara_resultados);
     
     return documentos_retorna_classe(dataset[resultado_knn[0].posicao_no_vet]);
 }

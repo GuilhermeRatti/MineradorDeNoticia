@@ -9,10 +9,10 @@
 #define MULTIPLICADOR_TEXTO 2
 
 
-void executa_menu(p_HashTable table);
+void executa_menu(p_HashTable table,int k);
 void executa_buscar_noticias(p_HashTable table);
-void executa_classificar_noticias(p_HashTable table, int*qtd_novos_textos);
-void executa_relatorio_noticias(p_HashTable table);
+void executa_classificar_noticias(p_HashTable table, int*qtd_novos_textos, int k);
+void executa_relatorio_palavras(p_HashTable table);
 void executa_relatorio_documento(p_HashTable table);
 
 int main(int argc, char const *argv[])
@@ -38,7 +38,9 @@ int main(int argc, char const *argv[])
 
     //**Parte do menu:
 
-    executa_menu(table);
+    int k = atoi(argv[2]);
+
+    executa_menu(table,k);
 
     //**
     //hash_imprime_palavra(table,"de");
@@ -50,7 +52,7 @@ int main(int argc, char const *argv[])
 }
 
 
-void executa_menu(p_HashTable table)
+void executa_menu(p_HashTable table, int k)
 {
     int qtd_novos_docs_registrados=0;
     int opcao = -1;
@@ -66,11 +68,11 @@ void executa_menu(p_HashTable table)
         }
         else if (opcao == 2)
         {
-            executa_classificar_noticias(table, &qtd_novos_docs_registrados);
+            executa_classificar_noticias(table, &qtd_novos_docs_registrados, k);
         }
         else if (opcao == 3)
         {
-            executa_relatorio_noticias(table);
+            executa_relatorio_palavras(table);
         }
         else if (opcao == 4)
         {
@@ -78,7 +80,8 @@ void executa_menu(p_HashTable table)
         }
         else if (opcao != 0)  
         {
-            printf("\nOpcao invalida!\n");
+            hash_free(table);
+            exit(printf("\nOpcao invalida!\n"));
         }
     }
 }
@@ -113,13 +116,14 @@ void executa_buscar_noticias(p_HashTable table)
     free(texto);
 }
 
-void executa_classificar_noticias(p_HashTable table, int *qtd_novos_docs)
+void executa_classificar_noticias(p_HashTable table, int *qtd_novos_docs, int k)
 {
     int texto_alc = 125, texto_tam = 0;
     char char_atual = ' ';
     char *texto = calloc(texto_alc+1, sizeof(char));
 
     int qtd_docs_treino = hash_retorna_qtd_doc(table);
+    printf("QTD DOCS: %d", qtd_docs_treino);
 
     printf("\n=> Classificar noticias:\n\n\tDigite o texto para classificar: ");
     
@@ -140,25 +144,19 @@ void executa_classificar_noticias(p_HashTable table, int *qtd_novos_docs)
 
     texto[texto_tam] = '\0';
 
-    int opt,k_vizinhos=0;
+    int opt;
     printf("\n\n\tDigite 1 ou 2 para escolher entre um classificador KNN ou Centroide mais proximo, respectivamente: ");
     scanf("%d",&opt);
 
     char nome[50],classe[4];
 
-    sprintf(nome,"Teste%d.txt",(*qtd_novos_docs+1));
+    sprintf(nome,"Teste%d.txt",(*qtd_novos_docs)+1);
     sprintf(classe,"tbd");
     p_Documentos doc = documentos_cria(classe,nome,qtd_docs_treino+(*qtd_novos_docs));
     hash_registra_noticia_do_terminal(table,doc,texto);
     hash_calcula_TFIDF_do_doc(table,doc,qtd_docs_treino+(*qtd_novos_docs),TESTE);
 
-    if(opt==K_NEAREST_NEIGHBOURS)
-    {
-        printf("\tDigite a quantidade de K vizinhos a ser analisada: ");
-        scanf("%d",&k_vizinhos);
-    }
-
-    char* classe_predita = hash_classifica_nova_noticia(table,hash_retorna_qtd_doc(table)-1,*qtd_novos_docs,opt,k_vizinhos);
+    char* classe_predita = hash_classificar_noticias(table,doc,opt,k);
 
     printf("\n\t####################################\n");
     printf("\t####### CLASSE PREDITA: %s ########\n",classe_predita);
@@ -166,10 +164,11 @@ void executa_classificar_noticias(p_HashTable table, int *qtd_novos_docs)
 
     (*qtd_novos_docs)++;
 
+    documentos_free(doc);
     free(texto);
 }
 
-void executa_relatorio_noticias(p_HashTable table)
+void executa_relatorio_palavras(p_HashTable table)
 {
     char palavra_relatorio[50], lixo;
  
@@ -193,7 +192,7 @@ void executa_relatorio_noticias(p_HashTable table)
     }
     else
     {
-        hash_relatorio_noticias(table, palavra_relatorio);
+        hash_relatorio_palavras(table, palavra_relatorio);
     }
 }
 

@@ -109,12 +109,12 @@ int documentos_retorna_quantidade_palavras(p_Documentos doc)
 void documentos_imprime(p_Documentos doc)
 {
     printf("\nNOME: %s\nCLASSE: %s\nN_DOCS: %d\n",doc->nome_doc,doc->classe,doc->tam_vet);
-    //int i;
+    int i;
 
-    // for(i=0;i<doc->tam_vet;i++)
-    // {
-    //     printf("Palavra: %s, Freq: %d, TFIDF: %.2f\n",doc->vet[i].palavra,doc->vet[i].Frequencia,doc->vet[i].TFIDF);
-    // }
+    for(i=0;i<doc->tam_vet;i++)
+    {
+        printf("Palavra: %s, Freq: %d, TFIDF: %.2f\n",doc->vet[i].palavra,doc->vet[i].Frequencia,doc->vet[i].TFIDF);
+    }
 }
 
 void documentos_registra_frequencia(p_Documentos doc, char *palavra)
@@ -184,25 +184,40 @@ void documentos_preenche_centroide(p_Documentos centroide,char**palavras,double*
 
 double documentos_calcula_cosseno(p_Documentos doc1, p_Documentos doc2)
 {
-    double upper_part=0,lower_part_doc1=0,lower_part_doc2=0;
+    double upper_part=0,lower_part_doc1=0,lower_part_doc2=0, holder_tfidf=0;
     int i;
     IndiceDocumentos *item;
 
     for(i=0;i<doc1->tam_vet;i++)
     {
         item = (IndiceDocumentos*)bsearch(&(doc1->vet[i]),doc2->vet,doc2->tam_vet,sizeof(IndiceDocumentos),compara_indices_doc);
-        if(item!=NULL && (*item).TFIDF!=0 && doc1->vet[i].TFIDF!=0)
+        if(doc1->vet[i].TFIDF!=0)
         {
-            upper_part += (*item).TFIDF * doc1->vet[i].TFIDF;
+            if(item==NULL)
+                holder_tfidf = 0;
+            else
+                holder_tfidf = (*item).TFIDF;
+        
+            upper_part += holder_tfidf * doc1->vet[i].TFIDF;
             lower_part_doc1 += pow(doc1->vet[i].TFIDF,2);
-            lower_part_doc2 += pow((*item).TFIDF,2);
         }
     }
 
-    if(lower_part_doc1==0 || lower_part_doc2 ==0)
+    for(i=0;i<doc2->tam_vet;i++)
+    {
+        if(doc2->vet[i].TFIDF!=0)
+            lower_part_doc2 += pow(doc2->vet[i].TFIDF,2);
+    }
+
+    if(lower_part_doc2==0)
+    {
+        return -1;
+    }
+    else if(lower_part_doc1==0)
     {
         return 0;
     }
+    
 
     return upper_part/(sqrt(lower_part_doc1)* sqrt(lower_part_doc2));
 }

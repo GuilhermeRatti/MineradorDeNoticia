@@ -49,8 +49,7 @@ int main(int argc, char const *argv[])
     */
 
     // PEQUENO ALGORITIMO QUE EXTRAI O CAMINHO DIGITADO PARA UTILIZA-LO POSTERIORMENTE
-    char *caminho_relativo = (char*)calloc(strlen(argv[1])+1,sizeof(char));
-    strcpy(caminho_relativo,argv[1]);
+    char *caminho_relativo = strdup(argv[1]);
 
     int i=0;
     while (1)
@@ -62,14 +61,11 @@ int main(int argc, char const *argv[])
     caminho_relativo[strlen(caminho_relativo) - i + 1]='\0';
 
     p_HashTable table = hash_initialize_table();
-    manager_read_txt(arqEntrada, caminho_relativo, table, TRAIN);
+    manager_read_txt_train(arqEntrada, caminho_relativo, table, TRAIN);
 
     free(caminho_relativo);
     fclose(arqEntrada);
     
-    hash_imprime_palavra(table,"judiciario");
-    hash_imprime_documento(table,1);
-
     hash_print_amount_of_items(table);
 
     //**Save das listas em arquivos binarios:

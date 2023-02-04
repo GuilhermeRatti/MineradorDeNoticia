@@ -5,10 +5,10 @@
             "type": "cppdbg",
             "request": "launch",
             "cwd": ".",
-            "program": "${workspaceRoot}/construtor",
+            "program": "${workspaceRoot}/principal",
             "args": [
-                "data/tiny/train.txt",
-                "out.bin"
+                "out.bin",
+                "10"
             ],
             "preLaunchTask": "compilacao"
         }

@@ -19,8 +19,11 @@ construtor: libIndices.a ConstrutorIndices.c
 principal: libIndices.a ProgramaPrincipal.c
 	$(CC) -o principal ProgramaPrincipal.c -I Indices -L . -lIndices $(CFLAGS)
 
+experimentos: libIndices.a Experimentos.c
+	$(CC) -o principal Experimentos.c -I Indices -L . -lIndices $(CFLAGS)
+
 run_c:
-	./construtor data/medium-large/train.txt out_medium_large.bin
+	./construtor data/large/train.txt out_large.bin
 
 run_p:
 	./principal out_tiny.bin 10
@@ -29,7 +32,7 @@ val_c:
 	@valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes --log-file=valgrind-out.txt -s ./construtor data/tiny/train.txt out.bin
 
 val_p:
-	@valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes --log-file=val-principal-out.txt -s ./principal out_medium_large.bin 10
+	@valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes --log-file=val-principal-out.txt -s ./principal out_large.bin 10
 	
 clean:
-	@rm -f main builder *.a Indices/*.o *.txt *.bin
+	@rm -f main builder *.a Indices/*.o *.txt 
