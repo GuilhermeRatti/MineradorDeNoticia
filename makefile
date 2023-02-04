@@ -23,22 +23,22 @@ experimentos: libIndices.a Experimentos.c
 	$(CC) -o experimentos Experimentos.c -I Indices -L . -lIndices $(CFLAGS)
 
 run_c:
-	./construtor data/large/train.txt out_large.bin
+	./construtor data/medium-large/train.txt out_medium-large.bin
 
 run_p:
-	./principal out_tiny.bin 10
+	./principal out_medium-large.bin 100
 
 run_e:
-	./experimentos out_large.bin data/large/test.txt 1000 exp_large.txt
+	./experimentos out_medium-large.bin data/medium-large/test.txt 1000 exp_medium-large.txt
 
 val_c:
-	@valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes --log-file=valgrind-out.txt -s ./construtor data/tiny/train.txt out.bin
+	@valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes --log-file=valgrind-construtor-out.txt -s ./construtor data/tiny/train.txt out_tiny.bin
 
 val_p:
-	@valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes --log-file=val-principal-out.txt -s ./principal out_large.bin 10
+	@valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes --log-file=val-principal-out.txt -s ./principal out_tiny.bin 1
 	
 val_e:
-	@valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes --log-file=val-experimentos-out.txt -s ./experimentos out_medium_large.bin data/medium-large/test.txt 1000 exp_medium_large.txt
+	@valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes --log-file=val-experimentos-out.txt -s ./experimentos out_medium-large.bin data/medium-large/test.txt 100 medium-large.txt
 
 clean:
-	@rm -f main builder *.a Indices/*.o *.txt 
+	@rm -f main principal construtor experimentos *.a Indices/*.o *.ELF *.exe

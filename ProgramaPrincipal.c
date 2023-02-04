@@ -9,15 +9,20 @@
 #define MULTIPLICADOR_TEXTO 2
 
 
+//Entra no menu de selecao de opcoes
 void executa_menu(p_HashTable table,int k);
+//Executa a primeira funcionalidade
 void executa_buscar_noticias(p_HashTable table);
+//Executa a segunda funcionalidade
 void executa_classificar_noticias(p_HashTable table, int*qtd_novos_textos, int k);
+//Executa a terceira funcionalidade
 void executa_relatorio_palavras(p_HashTable table);
+//Executa a quarta funcionalidade
 void executa_relatorio_documento(p_HashTable table);
 
 int main(int argc, char const *argv[])
 {
-    if(argc < 2)
+    if(argc < 3)
     {
         exit(printf("QUANTIDADE INSUFICIENTE DE INFORMACOES DISPONIBILIZADAS!\nINFORME O ARQUIVO BIN E O NUMERO K DE VIZINHOS!!\n"));
     }
@@ -28,6 +33,11 @@ int main(int argc, char const *argv[])
         tolower(argv[1][strlen(argv[1])-1])!='n')
     {
         exit(printf("NOME DO ARQUIVO DE ENTRADA ESTA FORMATADO INCORRETAMENTE!\nO FORMATO DEVE TERMINAR EM '.bin'!!\n"));
+    }
+
+    if (!atoi(argv[2]))
+    {
+        exit(printf("ERRO: Um numero deve ser informado como valor de K.\n"));
     }
 
     //**Parte da leitura do arquivo.bin para preenchimento da tabela HASH:
@@ -42,11 +52,7 @@ int main(int argc, char const *argv[])
 
     executa_menu(table,k);
 
-    //**
-    //hash_imprime_palavra(table,"de");
-    //hash_imprime_documento(table,1);
-
-    //hash_print_amount_of_items(table);
+    //**liberando a tabela:
 
     hash_free(table);
 }
@@ -57,8 +63,10 @@ void executa_menu(p_HashTable table, int k)
     int qtd_novos_docs_registrados=0;
     int opcao = -1;
 
+    //enquanto vc não escolhe a opcao de sair (0):
     while (opcao)
     {
+        opcao = -1;
         printf("\n=> Programa Principal:\n1 - Buscar noticias\n2 - Classificar noticias\n3 - Relatorio de palavras\n4 - Relatorio de documentos\n0 - Sair\n\n\tOpcao: ");
         scanf("%d", &opcao);
         
@@ -80,6 +88,7 @@ void executa_menu(p_HashTable table, int k)
         }
         else if (opcao != 0)  
         {
+            //se a opcao for qualquer outra coisa fora as opcoes disponibilizadas o programa termina
             hash_free(table);
             exit(printf("\nOpcao invalida!\n"));
         }
@@ -94,6 +103,7 @@ void executa_buscar_noticias(p_HashTable table)
 
     printf("\n=> Buscar noticias:\n\n\tDigite o texto para busca: ");
     
+    //extrai a noticia enviada via terminal:
     scanf("\n%c", &char_atual);
     while (char_atual != '\n')
     {
@@ -111,6 +121,7 @@ void executa_buscar_noticias(p_HashTable table)
 
     texto[texto_tam] = '\0';
     
+    //busca a noticia:
     hash_buscar_noticias(table, texto);
 
     free(texto);
@@ -123,7 +134,7 @@ void executa_classificar_noticias(p_HashTable table, int *qtd_novos_docs, int k)
     char *texto = calloc(texto_alc+1, sizeof(char));
 
     int qtd_docs_treino = hash_retorna_qtd_doc(table);
-    printf("QTD DOCS: %d", qtd_docs_treino);
+    //printf("QTD DOCS: %d", qtd_docs_treino);
 
     printf("\n=> Classificar noticias:\n\n\tDigite o texto para classificar: ");
     
@@ -154,6 +165,9 @@ void executa_classificar_noticias(p_HashTable table, int *qtd_novos_docs, int k)
     sprintf(classe,"tbd");
     p_Documentos doc = documentos_cria(classe,nome,qtd_docs_treino+(*qtd_novos_docs));
     hash_registra_noticia_do_terminal(table,doc,texto);
+
+    free(texto);
+
     hash_calcula_TFIDF_do_doc(table,doc,qtd_docs_treino+(*qtd_novos_docs),TESTE);
 
     char* classe_predita = hash_classificar_noticias(table,doc,opt,k);
@@ -165,7 +179,6 @@ void executa_classificar_noticias(p_HashTable table, int *qtd_novos_docs, int k)
     (*qtd_novos_docs)++;
 
     documentos_free(doc);
-    free(texto);
 }
 
 void executa_relatorio_palavras(p_HashTable table)

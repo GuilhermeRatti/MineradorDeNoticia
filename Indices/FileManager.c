@@ -84,7 +84,6 @@ int manager_read_txt_test(FILE* arqEntrada, char* caminho_relativo, p_Documentos
 
         FILE *documento;
         documento = fopen(diretorio_doc,"r");
-        
         if (documento == NULL)
         {
             fclose(arqEntrada);

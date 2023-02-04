@@ -8,7 +8,6 @@
 
 int SIZE_OF_TABLE = 23131;
 
-
 typedef struct
 {
     p_Palavras *vet_indice;
@@ -38,24 +37,47 @@ struct HashTable
 
 /*
 Estrutura local para organização de identificadores com relação a algum fator numerico
-EX: IDX_DOC em relacao a TF-IDF;
-    Classes em relacao a aparicoes;
-    IDX_DOX em relacao a tamanho;
 */
 typedef struct
 {
     long int identificador;
     double fator;
-    char * rotulo;
+    char *rotulo;
 } Organizador;
 
+// Verifica se um identificador ja esta presente em um vetor de organizadores, retornando seu id ou -1 se não econtrado
 int organizador_verifica_existencia(Organizador *vet_org, int tam_vet, long int identificador);
-Organizador *organizador_adiciona(Organizador *vet_org, int *tam_vet, long int identificador, double fator, char* rotulo);
+
+// Cria  um novo organizador e o adiciona a um vetor de organizadores
+Organizador *organizador_adiciona(Organizador *vet_org, int *tam_vet, long int identificador, double fator, char *rotulo);
+
+/*Recebe:
+ *- Um vetor de Organizador organizado
+ *- Um inteiro do tamanho do vetor
+ *- Um inteiro para limita a quantidade de impressoes (ignorado caso passe do tamnho do vetor)
+ *- Um char que pode assumir possibilita 4 metodos de impressao:
+ *    - 'n' -> Numerico:          imprime identificador e o fator         | trata o identificador como um numero
+ *    - 's' -> String:            imprime identificador e o fator         | trata o identificador como uma string
+ *    - 'N' -> Numerico Triplo:   imprime identificador ,fator e o rotulo | trata o identificador como um numero
+ *    - 'S' -> String Triplo:     imprime identificador ,fator e o rotulo | trata o identificador como uma string
+ */
 void organizador_imprime(Organizador *vet_org, int tam_vet, int limitador, char modo);
+
+// Compara os fatores dos organizadores: F1 > F2 retorna 1; F1 < F2 retorna -1; F1 == F2 retorna 0;
 int organizador_sorteia_crescente(const void *elemento_1, const void *elemento_2);
+
+// Compara os fatores dos organizadores: F1 > F2 retorna -1; F1 < F2 retorna 1; F1 == F2 retorna 0;
 int organizador_sorteia_decrescente(const void *elemento_1, const void *elemento_2);
+
+// Libera um vetor de organizadores
 void organizador_free(Organizador *vet_org, int tam_vet);
-char * classe_retorna_string_unica(p_HashTable table, p_Documentos doc);
+
+/*
+- Usa os centroides para conseguir um identificador unico comparando a classe do documento com a clase do centroide.
+- O vetor de centroides tem apenas strings de classes unicas. Essas strings sao ponteiros que sao salvas como um numero,
+assim é possivel fazer um identificadr unico que tambem referencia a uma string.
+*/
+char *classe_retorna_string_unica(p_HashTable table, p_Documentos doc);
 
 p_HashTable hash_initialize_table()
 {
@@ -99,7 +121,7 @@ void hash_register_new_doc(p_HashTable table, p_Documentos doc)
 
     table->doc_table[table->qtd_doc] = doc;
 
-    p_Documentos *item = (p_Documentos*)bsearch(&(doc),table->class_table,table->qtd_class,sizeof(p_Documentos),compara_classe_documentos);
+    p_Documentos *item = (p_Documentos *)bsearch(&(doc), table->class_table, table->qtd_class, sizeof(p_Documentos), compara_classe_documentos);
 
     if (item == NULL)
     {
@@ -112,7 +134,7 @@ void hash_register_new_doc(p_HashTable table, p_Documentos doc)
         char *class_name = documentos_retorna_classe(doc);
         table->class_table[table->qtd_class] = documentos_cria(class_name, class_name, table->qtd_class);
         table->qtd_class++;
-        printf("QTD CLASSE: %d\n",table->qtd_class);
+        // printf("QTD CLASSE: %d\n",table->qtd_class);
         documentos_organiza_ordem(table->class_table, table->qtd_class);
     }
 
@@ -121,44 +143,43 @@ void hash_register_new_doc(p_HashTable table, p_Documentos doc)
 
 void hash_register_new_item(p_HashTable table, p_Documentos doc, char *palavra, int p_index)
 {
-    
+
     p_Palavras p = NULL;
     p = palavras_cria(palavra, p_index);
     int pos_no_indice = table->pal_table[p_index].qtd_palavras_no_indice;
     documentos_registra_frequencia(doc, palavra);
 
-    p_Palavras *pal_item = (p_Palavras*)bsearch(&p,
-                                                table->pal_table[p_index].vet_indice,
-                                                table->pal_table[p_index].qtd_palavras_no_indice,
-                                                sizeof(p_Palavras),
-                                                compara_palavras);
+    p_Palavras *pal_item = (p_Palavras *)bsearch(&p,
+                                                 table->pal_table[p_index].vet_indice,
+                                                 table->pal_table[p_index].qtd_palavras_no_indice,
+                                                 sizeof(p_Palavras),
+                                                 compara_palavras);
 
-    if(pal_item!=NULL)
+    if (pal_item != NULL)
     {
-        
-        palavras_registra_frequencia((*pal_item),documentos_retorna_id(doc));
+
+        palavras_registra_frequencia((*pal_item), documentos_retorna_id(doc));
         palavras_free(p);
         return;
     }
 
     table->qtd_pal++;
     table->pal_table[p_index].qtd_palavras_no_indice++;
-    if(table->pal_table[p_index].qtd_palavras_no_indice<=1)
-        table->pal_table[p_index].vet_indice = (p_Palavras *)calloc(1,sizeof(p_Palavras));
-    
+    if (table->pal_table[p_index].qtd_palavras_no_indice <= 1)
+        table->pal_table[p_index].vet_indice = (p_Palavras *)calloc(1, sizeof(p_Palavras));
+
     else
         table->pal_table[p_index].vet_indice = (p_Palavras *)realloc(table->pal_table[p_index].vet_indice,
-                                                                 table->pal_table[p_index].qtd_palavras_no_indice * sizeof(p_Palavras));
-    
-    
+                                                                     table->pal_table[p_index].qtd_palavras_no_indice * sizeof(p_Palavras));
+
     palavras_registra_frequencia(p, documentos_retorna_id(doc));
     table->pal_table[p_index].vet_indice[pos_no_indice] = p;
-    palavras_organiza_ordem(table->pal_table[p_index].vet_indice,table->pal_table[p_index].qtd_palavras_no_indice);
+    palavras_organiza_ordem(table->pal_table[p_index].vet_indice, table->pal_table[p_index].qtd_palavras_no_indice);
 }
 
 void hash_print_amount_of_items(p_HashTable table)
-{   
-    printf("Quantidade de documentos: %d\n",table->qtd_doc);
+{
+    printf("Quantidade de documentos: %d\n", table->qtd_doc);
     printf("Quantidade total de palavras diferentes: %d\n", table->qtd_pal);
 }
 
@@ -196,44 +217,44 @@ void hash_imprime_documento(p_HashTable table, int posicao)
 
 void hash_calcula_IDF(p_HashTable table)
 {
-    int i,j;
-    for(i=0;i<SIZE_OF_TABLE;i++)
+    int i, j;
+    for (i = 0; i < SIZE_OF_TABLE; i++)
     {
-        for(j=0;j<table->pal_table[i].qtd_palavras_no_indice;j++)
+        for (j = 0; j < table->pal_table[i].qtd_palavras_no_indice; j++)
         {
-            palavras_preenche_IDF(table->pal_table[i].vet_indice[j],table->qtd_doc);
+            palavras_preenche_IDF(table->pal_table[i].vet_indice[j], table->qtd_doc);
         }
     }
 }
 
-void hash_calcula_TFIDF_em_massa(p_HashTable table,int beginning)
+void hash_calcula_TFIDF_em_massa(p_HashTable table, int beginning)
 {
     int i;
-    for(i=beginning;i<table->qtd_doc;i++)
+    for (i = beginning; i < table->qtd_doc; i++)
     {
-        hash_calcula_TFIDF_do_doc(table,table->doc_table[i], i, TRAIN);
+        hash_calcula_TFIDF_do_doc(table, table->doc_table[i], i, TRAIN);
     }
 }
 
 void hash_calcula_TFIDF_do_doc(p_HashTable table, p_Documentos doc, int posicao, TIPO_LEITURA opt)
 {
-    int j,hash;
+    int j, hash;
     char **palavras;
     int qtd;
-    qtd = documentos_requisita_TFIDF(doc,&palavras);
+    qtd = documentos_requisita_TFIDF(doc, &palavras);
     double tfidf[qtd];
 
-    for(j=0;j<qtd;j++)
+    for (j = 0; j < qtd; j++)
     {
         hash = hash_get_index(palavras[j]);
-        p_Palavras p = palavras_cria(palavras[j],hash);
+        p_Palavras p = palavras_cria(palavras[j], hash);
 
-        p_Palavras *item = (p_Palavras*)bsearch(&p,
-                                                table->pal_table[hash].vet_indice,
-                                                table->pal_table[hash].qtd_palavras_no_indice,
-                                                sizeof(p_Palavras),
-                                                compara_palavras);
-        if(item==NULL)
+        p_Palavras *item = (p_Palavras *)bsearch(&p,
+                                                 table->pal_table[hash].vet_indice,
+                                                 table->pal_table[hash].qtd_palavras_no_indice,
+                                                 sizeof(p_Palavras),
+                                                 compara_palavras);
+        if (item == NULL)
         {
             hash_free(table);
             exit(printf("ALGO DE MUITO ERRADO ACONTECEU, N ACHEI UMA PALAVRA Q ERA PRA JA ESTAR REGISTRADA!!\n"));
@@ -241,28 +262,28 @@ void hash_calcula_TFIDF_do_doc(p_HashTable table, p_Documentos doc, int posicao,
 
         palavras_free(p);
 
-        tfidf[j] = palavras_busca_e_preenche_TFIDF((*item),posicao);
+        tfidf[j] = palavras_busca_e_preenche_TFIDF((*item), posicao);
     }
 
-    if(opt==TRAIN)
+    if (opt == TRAIN)
     {
-        p_Documentos *doc_item = (p_Documentos*)bsearch(&doc,
-                                                        table->class_table,
-                                                        table->qtd_class,
-                                                        sizeof(p_Documentos),
-                                                        compara_classe_documentos);
-        
-        if(doc_item==NULL)
+        p_Documentos *doc_item = (p_Documentos *)bsearch(&doc,
+                                                         table->class_table,
+                                                         table->qtd_class,
+                                                         sizeof(p_Documentos),
+                                                         compara_classe_documentos);
+
+        if (doc_item == NULL)
         {
             hash_free(table);
             exit(printf("ALGO DE MUITO ERRADO ACONTECEU, NAO ENCONTREI UM CENTROIDE DE CLASSE QUE ERA PRA ESTAR REGISTRADO\n"));
         }
 
-        documentos_preenche_centroide((*doc_item),palavras,tfidf,qtd);
+        documentos_preenche_centroide((*doc_item), palavras, tfidf, qtd);
     }
     free(palavras);
 
-    documentos_preenche_TFIDF(doc,tfidf);
+    documentos_preenche_TFIDF(doc, tfidf);
 }
 
 void hash_calcula_centroides(p_HashTable table)
@@ -272,45 +293,10 @@ void hash_calcula_centroides(p_HashTable table)
     for (i = 0; i < table->qtd_class; i++)
     {
         documentos_calcula_media_centroide(table->class_table[i]);
-        documentos_imprime(table->class_table[i]);
+        // documentos_imprime(table->class_table[i]);
     }
 }
 
-/*Ordem de escrita:
-    qtd_pal                                 - int
-    HashIndex{                              - HashIndex
-        OBS: escreve todos os indices da tabela hash, inclusive vazios
-        OBS: chama a funcao 'palavras_escrever_arquivo_bin'
-        Ordem de escritura:
-        qtd_palavras_indice                 - int
-        p_Palavras{                         - p_Palavras
-            idx de palavra                  - int
-            tam_vet                         - int
-            tam_palavra                     - int
-            palavra                         - char (* tam_palavra)
-            vet[tam_vet]:                   - IndicePalavras
-                idx doc                     - int
-                freq                        - int
-                TFIDF                       - double
-        }
-    }
-    qtd_doc                                 - int
-    p_Documentos e centroides{              - p_Documentos
-        OBS: chama a funcao 'documentos_escrever_arquivo_bin'
-        Ordem de escritura:
-        idx de doc                          - int
-        tam_vet                             - int
-        tam_nome_doc                        - int
-        nome doc                            - char (* tam_nome_doc)
-        tam_nome_classe                     - int
-        classe                              - char (* tam_nome_classe)
-        vet[tam_vet]:                       - IndiceDocumentos
-            tam_palavra                     - int
-            palavra                         - char *
-            freq                            - int
-            TFIDF                           - double
-    }
-*/
 void hash_escrever_arquivo_bin(p_HashTable table, const char *caminho_bin)
 {
     int i = 0, qtd_pal_local = 0;
@@ -323,8 +309,9 @@ void hash_escrever_arquivo_bin(p_HashTable table, const char *caminho_bin)
         exit(printf("ERRO: FALHA AO CRIAR ARQUIVO BINARIO.\n"));
     }
 
-    fwrite(&(table->qtd_pal), 1, sizeof(int), arq); // qtd de palavras -int
+    fwrite(&(table->qtd_pal), 1, sizeof(int), arq); // qtd de palavras - int
 
+    // pra cada palavra na tabela
     for (i = 0; i < SIZE_OF_TABLE; i++)
     {
         qtd_pal_local = table->pal_table[i].qtd_palavras_no_indice;
@@ -345,42 +332,6 @@ void hash_escrever_arquivo_bin(p_HashTable table, const char *caminho_bin)
     fclose(arq);
 }
 
-/*Ordem de escrita:
-        qtd_pal                                 - int
-        HashIndex{                              - HashIndex
-            OBS: escreve todos os indices da tabela hash, inclusive vazios
-            OBS: chama a funcao 'palavras_escrever_arquivo_bin'
-            Ordem de escritura:
-            qtd_palavras_indice                 - ints
-            p_Palavras{                         - p_Palavras
-                idx de palavra                  - int
-                tam_vet                         - int
-                tam_palavra                     - int
-                palavra                         - char (* tam_palavra)
-                vet[tam_vet]:                   - IndicePalavras
-                    idx doc                     - int
-                    freq                        - int
-                    TFIDF                       - double
-            }
-        }
-        qtd_doc                                 - int
-        p_Documentos e centroides{              - p_Documentos
-            OBS: chama a funcao 'documentos_escrever_arquivo_bin'
-            Ordem de escritura:
-            qtd de documetos                    - int
-                idx de doc                      - int
-                tam_vet                         - int
-                tam_nome_doc                    - int
-                nome doc                        - char (* tam_nome_doc)
-                tam_nome_classe                 - int
-                classe                          - char (* tam_nome_classe)
-                vet[tam_vet]:                   - IndiceDocumentos
-                    tam_palavra                 - int
-                    palavra                     - char *
-                    freq                        - int
-                    TFIDF                       - double
-        }
-*/
 void hash_le_arquivo_bin(p_HashTable table, const char *caminho_bin)
 {
 
@@ -416,7 +367,7 @@ void hash_le_arquivo_bin(p_HashTable table, const char *caminho_bin)
 
     documentos_le_arquivo_bin(arq, table->doc_table, table->qtd_doc);
 
-    fread(&(table->qtd_class), 1, sizeof(int), arq);
+    fread(&(table->qtd_class), 1, sizeof(int), arq); // qtd_cls - int
 
     table->class_table = (p_Documentos *)realloc(table->class_table, table->qtd_class * sizeof(p_Documentos));
 
@@ -436,19 +387,9 @@ int hash_palavra_verfica_existencia(p_HashTable table, char *palavra_alvo)
     return palavras_verifica_existencia(possivel_indice.vet_indice, possivel_indice.qtd_palavras_no_indice, palavra_alvo);
 }
 
-
-/* criar um vetor de Organizadores com identificador => IDX_DOC e fator => TF-IDF
-    onde:
-    para cada palavra:
-        verifica existencia na tabela
-        se existir, pega o indx_doc e TF-IDF para cada doc
-        ve se o idx bate com algum idx no identificador e se bater add no fator
-    depois organiza a matriz usando a função de sorteamento do organizador
-    imprime os 10 primeiros docs
-*/
 void hash_buscar_noticias(p_HashTable table, char *texto)
 {
-    // mostrar as 10 noticias em que as palavras mais aparecem
+
     int qtd_org_doc = 0, qtd_org_pal = 0, indice_pal_hash = -1, i = 0;
 
     char *palavra_atual;
@@ -471,9 +412,9 @@ void hash_buscar_noticias(p_HashTable table, char *texto)
 
         if (indice_pal_hash != -1)
         {
-            //pega a palavra da tabela
+            // pega a palavra da tabela
             palavra_tabela = table->pal_table[hash_get_index(palavra_atual)].vet_indice[indice_pal_hash];
-            
+
             // verifica se a palavra já foi lida em alguma iteracao anterior
             if (organizador_verifica_existencia(vet_org_pal, qtd_org_pal, (long int)palavra_tabela) == -1)
             {
@@ -487,7 +428,11 @@ void hash_buscar_noticias(p_HashTable table, char *texto)
                 // adiciona no vetor os dados dos documentos
                 for (i = 0; i < palavras_retorna_docs_quantidade(palavra_tabela); i++)
                 {
-                    vet_org_doc = organizador_adiciona(vet_org_doc, &qtd_org_doc, palavra_docs_ids[i], palavra_docs_TFIDFs[i], "");
+                    // verifica se o documento associados a palavra estao contido dentro dos limites dos documentos
+                    if (palavra_docs_ids[i]<table->qtd_doc)
+                    {
+                        vet_org_doc = organizador_adiciona(vet_org_doc, &qtd_org_doc, palavra_docs_ids[i], palavra_docs_TFIDFs[i], "");
+                    }
                 }
 
                 // libera os vetores alocados dentro da função de retorno
@@ -498,6 +443,7 @@ void hash_buscar_noticias(p_HashTable table, char *texto)
         palavra_atual = strtok(NULL, " ");
     }
 
+    // verifica se os termos foram encontrados
     if (qtd_org_doc != 0)
     {
         qsort(vet_org_doc, qtd_org_doc, sizeof(Organizador), organizador_sorteia_decrescente);
@@ -510,14 +456,15 @@ void hash_buscar_noticias(p_HashTable table, char *texto)
         printf("\nNenhum termo foi encontrado!\n");
     }
 
+    // libera organizadores
     organizador_free(vet_org_doc, qtd_org_doc);
     organizador_free(vet_org_pal, qtd_org_pal);
 }
 
-void hash_registra_noticia_do_terminal(p_HashTable table, p_Documentos doc, char*texto)
+void hash_registra_noticia_do_terminal(p_HashTable table, p_Documentos doc, char *texto)
 {
     int indice_pal_hash;
-    
+
     char *palavra_atual;
 
     palavra_atual = strtok(texto, " ");
@@ -528,24 +475,30 @@ void hash_registra_noticia_do_terminal(p_HashTable table, p_Documentos doc, char
         // verifica se a plavra existe na hash
         // verifica se a palavra ja foi adicionada
 
-        hash_register_new_item(table,doc,palavra_atual,indice_pal_hash);
+        hash_register_new_item(table, doc, palavra_atual, indice_pal_hash);
 
         palavra_atual = strtok(NULL, " ");
     }
 }
 
-char* hash_classificar_noticias(p_HashTable table, p_Documentos doc, TIPOS_DISPONIVEIS opcao, int k_vizinhos)
+char *hash_classificar_noticias(p_HashTable table, p_Documentos doc, TIPOS_DISPONIVEIS opcao, int k_vizinhos)
 {
 
     Classificador modelo = classificadores_retorna_tipo(opcao);
+    if (modelo == NULL)
+    {
+        documentos_free(doc);
+        hash_free(table);
+        exit(printf("ERRO: Opcao invalida!\n"));
+    }
     p_Documentos *dataset;
     int qtd_dados;
 
-    if(opcao==K_NEAREST_NEIGHBOURS)
+    if (opcao == K_NEAREST_NEIGHBOURS)
     {
-        
+
         dataset = table->doc_table;
-        qtd_dados = table->qtd_doc; //pegar somente os textos que vieram da base de treino
+        qtd_dados = table->qtd_doc; // pegar somente os textos que vieram da base de treino
     }
     else
     {
@@ -553,15 +506,9 @@ char* hash_classificar_noticias(p_HashTable table, p_Documentos doc, TIPOS_DISPO
         qtd_dados = table->qtd_class;
     }
 
-    return modelo(dataset,qtd_dados,doc,k_vizinhos);
+    return modelo(dataset, qtd_dados, doc, k_vizinhos);
 }
 
-/*
-O usuario deve digitar uma palavra e o programa deve exibir o número total de
-documentos em que a palavra aparece, os 10 em que ela aparece com mais frequência e a frequência da
-palavra por classe. Ambas as listas devem ser ordenadas com os itens de maior contagem aparecendo
-primeiro. A ordenação deve ser feita ao selecionar a opção usando a função qsort.
-*/
 void hash_relatorio_palavras(p_HashTable table, char *palavra_relatorio)
 {
     int qtd_org_doc = 0, qtd_org_cls = 0, i = 0;
@@ -573,10 +520,10 @@ void hash_relatorio_palavras(p_HashTable table, char *palavra_relatorio)
     Organizador *vet_org_cls = (Organizador *)calloc(qtd_org_cls, sizeof(Organizador));
 
     int indice_pal_hash = hash_palavra_verfica_existencia(table, palavra_relatorio);
-    
+
     if (indice_pal_hash != -1)
     {
-        //pega a palavra da tabela
+        // pega a palavra da tabela
         palavra_tabela = table->pal_table[hash_get_index(palavra_relatorio)].vet_indice[indice_pal_hash];
 
         // extrai informacoes dos documentos associados com a plavra (necessita liberacao manual)
@@ -587,22 +534,19 @@ void hash_relatorio_palavras(p_HashTable table, char *palavra_relatorio)
         // adiciona no vetor os dados dos documentos
         for (i = 0; i < qtd_docs_palavra; i++)
         {
-            if(palavra_docs_ids[i]<table->qtd_doc)
+            // verifica se o documento associados a palavra estao contido dentro dos limites dos documentos
+            if (palavra_docs_ids[i] < table->qtd_doc)
             {
-                vet_org_doc = organizador_adiciona(vet_org_doc, &qtd_org_doc, palavra_docs_ids[i], palavras_docs_frequencia[i],  "");
-            }
-            else
-            {
-                qtd_docs_palavra--;
+                vet_org_doc = organizador_adiciona(vet_org_doc, &qtd_org_doc, palavra_docs_ids[i], palavras_docs_frequencia[i], "");
             }
         }
 
-        for (i = 0; i < qtd_docs_palavra; i++)
-        {   
+        for (i = 0; i < qtd_org_doc; i++)
+        { // usamos os ids no pirmeiro organizador para pegar a frequencia dos docs em que a palavra aparece junto de sua classe
             p_Documentos doc_atual = table->doc_table[vet_org_doc[i].identificador];
             vet_org_cls = organizador_adiciona(vet_org_cls, &qtd_org_cls, (long int)classe_retorna_string_unica(table, doc_atual), vet_org_doc[i].fator, "");
         }
-        
+
         // libera os vetores alocados dentro da função de retorno
         free(palavra_docs_ids);
         free(palavras_docs_frequencia);
@@ -610,6 +554,7 @@ void hash_relatorio_palavras(p_HashTable table, char *palavra_relatorio)
         qsort(vet_org_doc, qtd_org_doc, sizeof(Organizador), organizador_sorteia_decrescente);
         qsort(vet_org_cls, qtd_org_cls, sizeof(Organizador), organizador_sorteia_decrescente);
 
+        // imprime o resultado da busca
         printf("\nResultado da busca:\n\nIDX_DOC\t\t|Frequencia\n");
         organizador_imprime(vet_org_doc, qtd_org_doc, 10, 'n');
 
@@ -620,16 +565,11 @@ void hash_relatorio_palavras(p_HashTable table, char *palavra_relatorio)
     {
         printf("\nTermo nao encontrado!\n");
     }
-    
+    // libera os organizadores
     organizador_free(vet_org_doc, qtd_org_doc);
     organizador_free(vet_org_cls, qtd_org_cls);
 }
 
-/*
-Exibe os 10 documentos mais longos e os 10 mais curtos com o número de
-palavras e as respectivas classes. As listas devem ser ordenadas, a primeira do maior para o menor e a
-segunda do menor para o maior. A ordenação deve ser feita ao selecionar a opção usando a função qsort.
-*/
 void hash_relatorio_documentos(p_HashTable table)
 {
     int qtd_org_doc = 0, i = 0;
@@ -637,25 +577,27 @@ void hash_relatorio_documentos(p_HashTable table)
     // identificador == idx_doc | fator == frquencia
     Organizador *vet_org_doc = (Organizador *)calloc(qtd_org_doc, sizeof(Organizador));
 
+    //Adiciona os documentos no organizador
     for (i = 0; i < table->qtd_doc; i++)
     {
         documento_atual = table->doc_table[i];
-        vet_org_doc = organizador_adiciona(vet_org_doc, &qtd_org_doc, documentos_retorna_id(documento_atual), documentos_retorna_quantidade_palavras(documento_atual),  documentos_retorna_classe(documento_atual));
+        vet_org_doc = organizador_adiciona(vet_org_doc, &qtd_org_doc, documentos_retorna_id(documento_atual), documentos_retorna_quantidade_palavras(documento_atual), documentos_retorna_classe(documento_atual));
     }
 
+    //Organiza e imprime os documentos em ordem decrscente
     qsort(vet_org_doc, qtd_org_doc, sizeof(Organizador), organizador_sorteia_decrescente);
     printf("\nResultado da busca:\n\nIDX_DOC\t\t|Qtd Palavras\t|Classe\n");
     organizador_imprime(vet_org_doc, qtd_org_doc, 10, 'N');
-    
+
+    //Organiza e imprime os documentos em ordem crscente
     qsort(vet_org_doc, qtd_org_doc, sizeof(Organizador), organizador_sorteia_crescente);
     printf("\n\nIDX_DOC\t\t|Qtd Palavras\t|Classe\n");
     organizador_imprime(vet_org_doc, qtd_org_doc, 10, 'N');
 
-
     organizador_free(vet_org_doc, qtd_org_doc);
 }
 
-char * classe_retorna_string_unica(p_HashTable table, p_Documentos doc)
+char *classe_retorna_string_unica(p_HashTable table, p_Documentos doc)
 {
     int i;
     for (i = 0; i < table->qtd_class; i++)
@@ -665,38 +607,9 @@ char * classe_retorna_string_unica(p_HashTable table, p_Documentos doc)
             return documentos_retorna_classe(table->class_table[i]);
         }
     }
-    
+
     return NULL;
 }
-
-void hash_free(p_HashTable table)
-{
-    int i, j;
-    for (i = 0; i < table->pal_allcd; i++)
-    {
-        for (j = 0; j < table->pal_table[i].qtd_palavras_no_indice; j++)
-        {
-            palavras_free(table->pal_table[i].vet_indice[j]);
-        }
-        free(table->pal_table[i].vet_indice);
-    }
-    for (i = 0; i < table->qtd_doc; i++)
-    {
-        documentos_free(table->doc_table[i]);
-    }
-
-    for (i = 0; i < table->qtd_class; i++)
-    {
-        documentos_free(table->class_table[i]);
-    }
-
-    free(table->pal_table);
-    free(table->doc_table);
-    free(table->class_table);
-    free(table);
-}
-
-
 
 int organizador_verifica_existencia(Organizador *vet_org, int tam_vet, long int identificador)
 {
@@ -711,19 +624,19 @@ int organizador_verifica_existencia(Organizador *vet_org, int tam_vet, long int 
     return -1;
 }
 
-
-
 Organizador *organizador_adiciona(Organizador *vet_org, int *tam_vet, long int identificador, double fator, char *rotulo)
 {
+    //Verifica se o identificador ja esta presente no vetor
     int id = organizador_verifica_existencia(vet_org, *tam_vet, identificador);
 
+    //se não estiver presente, adiciona; se estiver presente, aumenta o fator dele 
     if (id == -1)
     {
         vet_org = (Organizador *)realloc(vet_org, ((*tam_vet) + 1) * sizeof(Organizador));
 
         vet_org[*tam_vet].fator = fator;
         vet_org[*tam_vet].identificador = identificador;
-        vet_org[*tam_vet].rotulo =  calloc(strlen(rotulo)+1,sizeof(char));
+        vet_org[*tam_vet].rotulo = calloc(strlen(rotulo) + 1, sizeof(char));
         strcpy(vet_org[*tam_vet].rotulo, rotulo);
         *tam_vet += 1;
 
@@ -736,28 +649,21 @@ Organizador *organizador_adiciona(Organizador *vet_org, int *tam_vet, long int i
         return vet_org;
     }
 }
-/*Recebe: 
-- Um vetor de Organizador
-- Um inteiro do tamanho do vetor
-- Um inteiro para limita a quantidade de impressoes (ignorado caso passe do tamnho do vetor)
-- Um char que pode assumir possibilita 4 metodos de impressao:
-    - 'n' -> Numerico:          imprime identificador e o fator         | trata o identificador como um numero
-    - 's' -> String:            imprime identificador e o fator         | trata o identificador como uma string    
-    - 'N' -> Numerico Triplo:   imprime identificador ,fator e o rotulo | trata o identificador como um numero    
-    - 'S' -> String Triplo:     imprime identificador ,fator e o rotulo | trata o identificador como uma string    
-*/
+
 void organizador_imprime(Organizador *vet_org, int tam_vet, int limitador, char modo)
 {
-    int i=0, qtd_impressao=0;
+    int i = 0, qtd_impressao = 0;
+    //Verifica se o limitador ta dentro dos limites do vetor
     if (limitador > 0 && limitador < tam_vet)
     {
-        qtd_impressao = limitador;    
+        qtd_impressao = limitador;
     }
     else
     {
         qtd_impressao = tam_vet;
     }
 
+    //Verifica o modo de impressao
     if (modo == 'n')
     {
         for (i = 0; i < qtd_impressao; i++)
@@ -771,13 +677,15 @@ void organizador_imprime(Organizador *vet_org, int tam_vet, int limitador, char 
         {
             printf("%s\t\t|%.6f\n", (char *)vet_org[i].identificador, vet_org[i].fator);
         }
-    } else if (modo == 'N')
+    }
+    else if (modo == 'N')
     {
         for (i = 0; i < qtd_impressao; i++)
         {
             printf("%ld\t\t|%.6f\t|%s\n", vet_org[i].identificador, vet_org[i].fator, vet_org[i].rotulo);
         }
-    } else if (modo == 'S')
+    }
+    else if (modo == 'S')
     {
         for (i = 0; i < qtd_impressao; i++)
         {
@@ -785,7 +693,6 @@ void organizador_imprime(Organizador *vet_org, int tam_vet, int limitador, char 
         }
     }
 }
-
 
 int organizador_sorteia_crescente(const void *elemento_1, const void *elemento_2)
 {
@@ -805,7 +712,6 @@ int organizador_sorteia_crescente(const void *elemento_1, const void *elemento_2
         return 0;
     }
 }
-
 
 int organizador_sorteia_decrescente(const void *elemento_1, const void *elemento_2)
 {
@@ -839,12 +745,12 @@ void organizador_free(Organizador *vet_org, int tam_vet)
     free(vet_org);
 }
 
-void hash_preenche_tabela_classes(p_HashTable table,char *** tabela_classes)
+void hash_preenche_tabela_classes(p_HashTable table, char ***tabela_classes)
 {
-    (*tabela_classes) = (char**)realloc((*tabela_classes),table->qtd_class*sizeof(char*));
-    
+    (*tabela_classes) = (char **)realloc((*tabela_classes), table->qtd_class * sizeof(char *));
+
     int i;
-    for(i=0;i<table->qtd_class;i++)
+    for (i = 0; i < table->qtd_class; i++)
     {
         (*tabela_classes)[i] = strdup(documentos_retorna_classe(table->class_table[i]));
     }
@@ -853,4 +759,31 @@ void hash_preenche_tabela_classes(p_HashTable table,char *** tabela_classes)
 int hash_retorna_qtd_classes(p_HashTable table)
 {
     return table->qtd_class;
+}
+
+void hash_free(p_HashTable table)
+{
+    int i, j;
+    for (i = 0; i < table->pal_allcd; i++)
+    {
+        for (j = 0; j < table->pal_table[i].qtd_palavras_no_indice; j++)
+        {
+            palavras_free(table->pal_table[i].vet_indice[j]);
+        }
+        free(table->pal_table[i].vet_indice);
+    }
+    for (i = 0; i < table->qtd_doc; i++)
+    {
+        documentos_free(table->doc_table[i]);
+    }
+
+    for (i = 0; i < table->qtd_class; i++)
+    {
+        documentos_free(table->class_table[i]);
+    }
+
+    free(table->pal_table);
+    free(table->doc_table);
+    free(table->class_table);
+    free(table);
 }

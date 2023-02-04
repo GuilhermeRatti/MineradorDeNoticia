@@ -29,6 +29,19 @@ int main(int argc, char const *argv[])
         exit(printf("NOME DO ARQUIVO BINARIO DE ENTRADA ESTA FORMATADO INCORRETAMENTE!\nO FORMATO DEVE TERMINAR EM '.bin'!!\n"));
     }
 
+    if( argv[4][strlen(argv[4])-4]!='.' ||
+        tolower(argv[4][strlen(argv[4])-3])!='t' || 
+        tolower(argv[4][strlen(argv[4])-2])!='x' || 
+        tolower(argv[4][strlen(argv[4])-1])!='t')
+    {
+        exit(printf("NOME DO ARQUIVO TXT DE SAIDA ESTA FORMATADO INCORRETAMENTE!\nCONFIRA O NOME E SE O FORMATO TERMINA EM '.txt'!!\n"));
+    }
+
+    if (!atoi(argv[3]))
+    {
+        exit(printf("ERRO: Um numero deve ser informado como valor de K.\n"));
+    }
+
     FILE *arqEntrada;
 
     arqEntrada = fopen(argv[2],"r");
