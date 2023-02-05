@@ -1,9 +1,9 @@
-#include "FileManager.h"
-#include "HashTable.h"
+#include "../headers/FileManager.h"
+#include "../headers/HashTable.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "Classificadores.h"
+#include "../headers/Classificadores.h"
 
 void manager_read_txt_train(FILE* arqEntrada, char* caminho_relativo, p_HashTable table, TIPO_LEITURA opcao)
 {

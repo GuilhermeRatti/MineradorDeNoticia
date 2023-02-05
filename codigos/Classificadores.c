@@ -1,5 +1,5 @@
-#include "Classificadores.h"
-#include "Documentos.h"
+#include "../headers/Classificadores.h"
+#include "../headers/Documentos.h"
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>

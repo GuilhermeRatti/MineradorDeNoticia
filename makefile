@@ -1,17 +1,17 @@
 all: maker
 
 CC = gcc
-CODIGOS = Indices/Documentos.c Indices/Palavras.c Indices/FileManager.c Indices/HashTable.c Indices/Classificadores.c
-HEADERS = Indices/Documentos.h Indices/Palavras.h Indices/FileManager.h Indices/HashTable.h Indices/Classificadores.h
+CODIGOS = codigos/Documentos.c codigos/Palavras.c codigos/FileManager.c codigos/HashTable.c codigos/Classificadores.c
+HEADERS = headers/Documentos.h headers/Palavras.h headers/FileManager.h headers/HashTable.h headers/Classificadores.h
 override CFLAGS += -ggdb3 -lm -Wall
 
 libIndices.a: $(CODIGOS) $(HEADERS)
-	gcc -c Indices/Documentos.c -o Indices/Documentos.o $(CFLAGS)
-	gcc -c Indices/Classificadores.c -o Indices/Classificadores.o $(CFLAGS)
-	gcc -c Indices/Palavras.c -o Indices/Palavras.o $(CFLAGS)
-	gcc -c Indices/HashTable.c -o Indices/HashTable.o $(CFLAGS)
-	gcc -c Indices/FileManager.c -o Indices/FileManager.o $(CFLAGS)
-	ar -crs libIndices.a Indices/Documentos.o Indices/Palavras.o Indices/FileManager.o Indices/HashTable.o Indices/Classificadores.o
+	gcc -c codigos/Documentos.c -o objetos/Documentos.o $(CFLAGS)
+	gcc -c codigos/Classificadores.c -o objetos/Classificadores.o $(CFLAGS)
+	gcc -c codigos/Palavras.c -o objetos/Palavras.o $(CFLAGS)
+	gcc -c codigos/HashTable.c -o objetos/HashTable.o $(CFLAGS)
+	gcc -c codigos/FileManager.c -o objetos/FileManager.o $(CFLAGS)
+	ar -crs libIndices.a objetos/Documentos.o objetos/Palavras.o objetos/FileManager.o objetos/HashTable.o objetos/Classificadores.o
 
 construtor: libIndices.a ConstrutorIndices.c
 	$(CC) -o construtor ConstrutorIndices.c -I Indices -L . -lIndices $(CFLAGS)
@@ -38,7 +38,7 @@ val_p:
 	@valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes --log-file=val-principal-out.txt -s ./principal out_tiny.bin 1
 	
 val_e:
-	@valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes --log-file=val-experimentos-out.txt -s ./experimentos out_medium-large.bin data/medium-large/test.txt 100 medium-large.txt
+	@valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes --log-file=val-experimentos-out.txt -s ./experimentos out_tiny.bin data/tiny/test.txt 100 exp_tiny.txt
 
 clean:
-	@rm -f main principal construtor experimentos *.a Indices/*.o *.ELF *.exe
+	@rm -f main principal construtor experimentos *.a objetos/*.o *.ELF *.exe

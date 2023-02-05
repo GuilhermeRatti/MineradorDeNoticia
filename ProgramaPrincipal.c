@@ -1,8 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include "FileManager.h"
-#include "Classificadores.h"
-#include "HashTable.h"
+#include "headers/FileManager.h"
+#include "headers/Classificadores.h"
+#include "headers/HashTable.h"
 #include <string.h>
 #include <ctype.h>
 

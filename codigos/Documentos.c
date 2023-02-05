@@ -1,4 +1,4 @@
-#include "Documentos.h"
+#include "../headers/Documentos.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>

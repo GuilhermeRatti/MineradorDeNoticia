@@ -1,7 +1,7 @@
-#include "HashTable.h"
-#include "Palavras.h"
-#include "Documentos.h"
-#include "Classificadores.h"
+#include "../headers/HashTable.h"
+#include "../headers/Palavras.h"
+#include "../headers/Documentos.h"
+#include "../headers/Classificadores.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
