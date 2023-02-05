@@ -6,6 +6,8 @@ HEADERS = headers/Documentos.h headers/Palavras.h headers/FileManager.h headers/
 override CFLAGS += -ggdb3 -lm -Wall
 
 libIndices.a: $(CODIGOS) $(HEADERS)
+	rm -d objetos
+	mkdir objetos
 	gcc -c codigos/Documentos.c -o objetos/Documentos.o $(CFLAGS)
 	gcc -c codigos/Classificadores.c -o objetos/Classificadores.o $(CFLAGS)
 	gcc -c codigos/Palavras.c -o objetos/Palavras.o $(CFLAGS)
